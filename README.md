@@ -69,7 +69,7 @@ The repository uses Python tooling managed by uv:
     uv run python tools/contract-lint/contract_lint.py .
     uv run pytest
 
-The linter validates all JSON Schemas, YAML contracts, Decision front matter, references, unique IDs, Command outcome completeness, invariant coverage, Event producers, Scenario structure, prohibited technology leakage, and the completeness and equality of manifest contract revisions.
+The linter validates all JSON Schemas, YAML contracts, Decision front matter, references, unique IDs, Command outcome completeness, invariant coverage, Event producers, Scenario structure, prohibited technology leakage, the completeness and equality of manifest contract revisions, and lifecycle consistency between unresolved blocking Clarification Requests and contract status.
 
 A successful run exits with status zero and prints a summary. A failed run prints stable diagnostic codes, paths, and messages.
 

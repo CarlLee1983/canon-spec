@@ -687,6 +687,54 @@ def _manifest_diagnostics(
     return diagnostics
 
 
+def _blocking_clarification_diagnostics(
+    documents: Iterable[Document],
+    identifier_index: dict[str, tuple[Document, tuple[Any, ...]]],
+    root: Path,
+) -> list[Diagnostic]:
+    """Report contracts promoted past draft while a blocking clarification is unresolved."""
+    diagnostics: list[Diagnostic] = []
+    promoted = {"candidate", "accepted"}
+
+    for document in documents:
+        if document.category != "clarification":
+            continue
+        if document.data.get("status") == "resolved":
+            continue
+        if document.data.get("blocks_candidate") is not True:
+            continue
+
+        refs = document.data.get("affected_refs")
+        if not isinstance(refs, list):
+            continue
+
+        reported: set[Path] = set()
+        for ref in refs:
+            if not isinstance(ref, str):
+                continue
+            target = identifier_index.get(ref)
+            if target is None:
+                continue
+            owner = target[0]
+            if owner.category != "contract" or owner.path in reported:
+                continue
+            status = owner.data.get("status")
+            if status not in promoted:
+                continue
+            reported.add(owner.path)
+            diagnostics.append(
+                Diagnostic(
+                    "BLOCKED_CONTRACT_PROMOTED",
+                    _display_path(owner.path, root),
+                    (
+                        f"Contract is {status!r} while unresolved blocking clarification "
+                        f"{document.data.get('id')!r} cites {ref!r}."
+                    ),
+                )
+            )
+    return diagnostics
+
+
 def lint_repository(root: str | Path) -> list[Diagnostic]:
     repository_root = Path(root).resolve()
     schemas, diagnostics = _load_schemas(repository_root)
@@ -703,6 +751,9 @@ def lint_repository(root: str | Path) -> list[Diagnostic]:
     diagnostics.extend(_traceability_diagnostics(documents, repository_root))
     diagnostics.extend(_prohibited_term_diagnostics(repository_root))
     diagnostics.extend(_manifest_diagnostics(documents, repository_root))
+    diagnostics.extend(
+        _blocking_clarification_diagnostics(documents, identifier_index, repository_root)
+    )
 
     return sorted(
         diagnostics,
