@@ -17,6 +17,15 @@ Create `CLR-NNNN-topic.md` with YAML front matter:
 
 The body should explain why the answer matters and list known interpretations without selecting one. When a human reviewer resolves it, update the authoritative contract first, add or update Scenarios, record the resolution here, and rerun the linter.
 
+## Open requests
+
+- [CLR-0009: cross-context dependency unavailability](CLR-0009-dependency-unavailability.md) — blocks candidate
+- [CLR-0010: Command ID reservation lifetime](CLR-0010-command-id-retention.md)
+- [CLR-0011: concurrent Commands against one Order](CLR-0011-concurrent-order-commands.md) — blocks candidate
+- [CLR-0012: Order Item removal](CLR-0012-order-item-removal.md)
+
+These requests await human domain decisions. The `blocks_candidate` marks are the authoring assessment required by `constitution/ambiguity-policy.md`, not a ruling; a domain reviewer may change them.
+
 ## Resolved requests
 
 - [CLR-0001: submitted Order cancellation](CLR-0001-submitted-order-cancellation.md)
