@@ -5,7 +5,7 @@ version: "2.0.0"
 status: draft
 task_id: SALES-BASIC-GO-002
 
-objective: Produce a Go Sales domain implementation that conforms only to the pinned Sales 2.0.0 candidate contracts and treats Customer and Pricing as explicit dependency ports.
+objective: Produce a Go Sales domain implementation that conforms only to the pinned Sales 2.0.0 draft contracts and treats Customer and Pricing as explicit dependency ports.
 
 implementation_target:
   language: go

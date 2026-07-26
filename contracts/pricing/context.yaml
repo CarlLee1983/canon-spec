@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: context
 id: pricing
 version: "1.0.0"
-status: candidate
+status: draft
 
 summary: Pricing MUST be the authority for Product quotation, Quantity validity, Unit of Measure, currency, monetary calculation, and Item-subtotal rounding supplied to Sales.
 

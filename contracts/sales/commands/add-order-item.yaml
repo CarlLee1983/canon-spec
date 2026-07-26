@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: command
 id: sales.add-order-item
 version: "2.0.0"
-status: candidate
+status: draft
 
 summary: Add Order Item MUST append one distinct Pricing-quoted Item with a positive decimal Quantity to an eligible Order Draft.
 

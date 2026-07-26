@@ -21,7 +21,7 @@ The normative chain is:
 
 Contracts under [contracts](contracts/) are the sole source of normative business behavior. Scenarios express observable test oracles for cited rules. An implementation manifest pins exact contract revisions and describes a delivery target, but it cannot add or change a business rule.
 
-The current [Sales Context](contracts/sales/README.md) is a candidate example. It includes one Order Aggregate, four Commands, four Events, one state machine, two cross-context dependency contracts, and nineteen acceptance Scenarios. No Sales implementation exists in this repository.
+The current [Sales Context](contracts/sales/README.md) is a draft example. It includes one Order Aggregate, four Commands, four Events, one state machine, two cross-context dependency contracts, and nineteen acceptance Scenarios. No Sales implementation exists in this repository.
 
 ## Repository map
 
@@ -113,6 +113,6 @@ Only an authorized human domain reviewer may later mark a candidate accepted.
 
 ## Current limitations
 
-The Sales 2.0.0 example is `candidate`: internally coherent, fully traceable, and lint-clean, but not yet `accepted`. Its original eight blocking Clarification Requests are resolved. Only an authorized human domain reviewer may mark it accepted. Payment, refund, Return, fulfillment, shipment, tax, discount, inventory, invoicing, and Product-master behavior remain outside the conformance target and MUST NOT be inferred by an implementation.
+The Sales 2.0.0 example is `draft`. Its original eight blocking Clarification Requests are resolved, but [CLR-0009](clarifications/CLR-0009-dependency-unavailability.md) and [CLR-0011](clarifications/CLR-0011-concurrent-order-commands.md) are open and blocking, so the contract set is not eligible for `candidate` until a domain reviewer resolves them. Payment, refund, Return, fulfillment, shipment, tax, discount, inventory, invoicing, and Product-master behavior remain outside the conformance target and MUST NOT be inferred by an implementation.
 
 Pricing is authoritative for fractional Quantity validity, Unit of Measure, price calculation, and Item-subtotal rounding. Customer is authoritative for Customer existence and actor authorization. Their internal implementations remain outside this repository; Sales implementations consume them through the pinned Interaction contracts.

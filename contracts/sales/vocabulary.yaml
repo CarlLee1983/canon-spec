@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: vocabulary
 id: sales.vocabulary
 version: "2.0.0"
-status: candidate
+status: draft
 context_ref: sales
 
 terms:

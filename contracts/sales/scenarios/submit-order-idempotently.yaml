@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.submit-order.idempotent
 version: "2.0.0"
-status: candidate
+status: draft
 summary: Replaying the successful Submit Order Command returns its original outcome without another business occurrence.
 
 contract_refs:
