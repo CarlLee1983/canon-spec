@@ -58,6 +58,6 @@ Sales owns the lifecycle and invariants of the Order Aggregate described by [con
 - Sales allocates Order and Order Item IDs, preserves quote evidence, sums same-currency Item subtotals, and protects lifecycle and idempotency.
 - Cancel Order means pre-submission cancellation only. Refund and Return require future Context contracts.
 
-All eight original Clarification Requests were resolved by human domain decisions for this revision. The contracts remain draft until an explicit human lifecycle review authorizes promotion to candidate.
+All eight original Clarification Requests were resolved by human domain decisions for this revision. Human domain review has authorized promotion to `candidate`; the contracts remain candidate until an authorized human domain reviewer marks them accepted.
 
 For a non-normative human-readable view, open the [Traditional Chinese Order business logic guide](../../docs/zh-TW/order-business-logic.html). AI agents and implementations MUST continue to use the YAML contracts and one exact implementation manifest as their source.

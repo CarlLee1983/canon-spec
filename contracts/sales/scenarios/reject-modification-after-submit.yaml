@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-after-submit
 version: "2.0.0"
-status: draft
+status: candidate
 summary: A submitted Order rejects an Item addition and preserves all existing state.
 
 contract_refs:

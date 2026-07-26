@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: event
 id: sales.order-cancelled
 version: "2.0.0"
-status: draft
+status: candidate
 name: OrderCancelled
 
 meaning: OrderCancelled MUST mean that Sales moved one Order Draft to cancelled before submission; it MUST NOT mean refunded or returned.

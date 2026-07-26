@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: event
 id: sales.order-submitted
 version: "2.0.0"
-status: draft
+status: candidate
 name: OrderSubmitted
 
 meaning: OrderSubmitted MUST mean that Sales moved one non-empty Order Draft with quoted Items to submitted.

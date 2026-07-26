@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.success
 version: "2.0.0"
-status: draft
+status: candidate
 summary: A valid fractional Quantity appends one distinct quoted Item and adds Pricing's authoritative subtotal without Sales rounding.
 
 contract_refs:
