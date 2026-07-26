@@ -1,0 +1,62 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.submit-order.idempotent
+version: "2.0.0"
+status: draft
+summary: Replaying the successful Submit Order Command returns its original outcome without another business occurrence.
+
+contract_refs:
+  - sales.submit-order
+  - sales.order.command-id-idempotency
+  - sales.order.single-order-submitted-event
+  - sales.order-submitted
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: submitted
+    - path: events.sales.order-submitted.for_order.order-1001
+      operator: count_equals
+      value: 1
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-after-first-submit
+  prior_command:
+    command_ref: sales.submit-order
+    command_id: command-submit-001
+    outcome_code: ORDER_SUBMITTED
+
+when:
+  command_ref: sales.submit-order
+  input:
+    command_id: command-submit-001
+    order_id: order-1001
+
+then:
+  outcome:
+    status: success
+    code: ORDER_SUBMITTED
+    same_as_first: true
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: submitted
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-after-first-submit
+      - path: command_outcome.command-submit-001
+        operator: equals
+        value: original-outcome
+  events:
+    assertions:
+      - event_ref: sales.order-submitted
+        count: 1
+  forbidden:
+    - kind: event
+      event_ref: sales.order-submitted
+      description: A second OrderSubmitted business occurrence MUST NOT be created.
+    - kind: state_change
+      path: orders.order-1001
+      description: Replay MUST NOT change Order state or Items.

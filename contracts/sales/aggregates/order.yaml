@@ -1,0 +1,120 @@
+schema_version: "1.0"
+kind: aggregate
+id: sales.order
+version: "2.0.0"
+status: draft
+context_ref: sales
+
+summary: Order MUST be the Sales consistency boundary for allocated identity, verified Customer association, quoted Items, one currency, quoted totals, lifecycle, and Command idempotency.
+
+identity:
+  field: order_id
+  type: OrderId
+  rule_ref: sales.order.must-have-sales-allocated-unique-id
+
+initial_state: draft
+states:
+  - draft
+  - submitted
+  - cancelled
+
+attributes:
+  order_id:
+    type: OrderId
+    required: true
+  customer_id:
+    type: CustomerId
+    required: true
+  currency:
+    type: CurrencyCode
+    required: true
+  state:
+    type: OrderState
+    required: true
+  items:
+    type: Collection
+    item_type: OrderItem
+    required: true
+  total:
+    type: MoneySnapshot
+    required: true
+    derived: true
+
+invariants:
+  - id: sales.order.must-have-sales-allocated-unique-id
+    statement: Sales MUST allocate exactly one Order ID for each Order, and the allocated Order ID MUST be unique among Orders.
+    category: identity
+
+  - id: sales.order.must-belong-to-verified-customer
+    statement: An Order MUST belong to exactly one Customer whose existence and actor authority succeeded under customer.verify-order-authority.
+    category: ownership
+
+  - id: sales.order.currency-is-fixed
+    statement: An Order MUST have exactly one ISO 4217 Currency Code selected at creation, and its currency MUST NOT change.
+    category: value
+
+  - id: sales.order.item-quantity-must-be-positive
+    statement: Every Order Item Quantity MUST be greater than zero and MUST equal the exact decimal Quantity accepted by pricing.quote-order-item.
+    category: value
+
+  - id: sales.order.item-must-have-unique-id
+    statement: Sales MUST allocate a stable Order Item ID for every successful Item addition, and that ID MUST be unique within the Order.
+    category: identity
+
+  - id: sales.order.item-additions-do-not-merge
+    statement: Each successful Add Order Item Command MUST append one distinct Order Item and MUST NOT merge it with an existing Item.
+    category: value
+
+  - id: sales.order.submitted-must-have-items
+    statement: An Order in submitted state MUST contain at least one Order Item.
+    category: lifecycle
+    applies_when: state equals submitted
+
+  - id: sales.order.submitted-items-immutable
+    statement: Order Items of an Order in submitted state MUST NOT be modified.
+    category: lifecycle
+    applies_when: state equals submitted
+
+  - id: sales.order.cancelled-is-terminal
+    statement: An Order in cancelled state MUST NOT change state or modify its Order Items.
+    category: lifecycle
+    applies_when: state equals cancelled
+
+  - id: sales.order.cancel-before-submission-only
+    statement: Cancel Order MUST transition only an Order Draft to cancelled and MUST NOT represent a post-submission refund or Return.
+    category: lifecycle
+
+  - id: sales.order.total-equals-quoted-item-subtotals
+    statement: Order total MUST equal the sum of authoritative Item subtotals returned by pricing.quote-order-item in the Order currency.
+    category: calculation
+
+  - id: sales.order.item-subtotal-is-pricing-authoritative
+    statement: Each Order Item subtotal MUST equal the authoritative subtotal returned by pricing.quote-order-item for its exact Quantity and MUST NOT be recomputed or rounded by Sales.
+    category: calculation
+
+  - id: sales.order.item-price-must-not-be-negative
+    statement: Every Order Item Unit Price and Item subtotal MUST be zero or greater, and a negative value MUST NOT be used to represent a refund, Return, discount, or credit.
+    category: value
+
+  - id: sales.order.item-retains-price-snapshot
+    statement: An Order Item MUST retain the Product, Quantity, Unit of Measure, Unit Price, Item subtotal, Currency Code, and Price Quote ID returned by Pricing when the Item is added.
+    category: value
+
+  - id: sales.order.command-id-idempotency
+    statement: Repeating a Sales-wide Command ID with the same Command and normalized input MUST return the original outcome without duplicate state changes or Domain Event occurrences.
+    category: idempotency
+
+  - id: sales.order.command-id-conflict
+    statement: Reusing a Sales-wide Command ID for a different Command or different normalized input MUST fail with COMMAND_ID_CONFLICT and MUST NOT create state changes or Domain Event occurrences.
+    category: idempotency
+
+  - id: sales.order.single-order-submitted-event
+    statement: A successful first submission of an Order MUST create exactly one OrderSubmitted business occurrence.
+    category: event
+
+state_machine_ref: sales.order-lifecycle
+
+explanatory_notes:
+  - Fractional Quantity precision, Unit of Measure validity, Price calculation, and rounding belong to Pricing and are captured as quote evidence.
+  - Sales sums already-authoritative Item subtotals and does not repeat Pricing arithmetic.
+  - Tax, discount, inventory, payment, refund, return, shipment, fulfillment, and invoice behavior are outside this Aggregate.

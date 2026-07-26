@@ -1,0 +1,66 @@
+schema_version: "1.0"
+kind: command
+id: sales.cancel-order
+version: "2.0.0"
+status: draft
+
+summary: Cancel Order MUST move only an Order Draft to cancelled and MUST NOT represent a refund, Return, or post-submission reversal.
+
+actor:
+  type: customer
+
+input:
+  command_id:
+    type: CommandId
+    required: true
+  order_id:
+    type: OrderId
+    required: true
+
+preconditions:
+  - rule_ref: sales.order.cancelled-is-terminal
+  - rule_ref: sales.order.cancel-before-submission-only
+  - contract_ref: sales.order-lifecycle
+
+success:
+  code: ORDER_CANCELLED
+  result:
+    order_id: input.order_id
+    state: cancelled
+
+effects:
+  state_changes:
+    - aggregate_ref: sales.order
+      transition_ref: sales.order-lifecycle.cancel-draft
+      changes:
+        - path: state
+          value: cancelled
+  events:
+    - event_ref: sales.order-cancelled
+      count: 1
+
+failures:
+  - code: ORDER_NOT_FOUND
+    when: The Command MUST fail when input.order_id does not identify an Order.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_ALREADY_CANCELLED
+    when: The Command MUST fail when the identified Order is already cancelled and input.command_id is not a replay of its successful cancellation Command.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_ALREADY_SUBMITTED
+    when: The Command MUST fail when the identified Order is submitted because refund and Return behavior require separate contracts.
+    state_change: none
+    emitted_events: none
+  - code: COMMAND_ID_CONFLICT
+    when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
+    state_change: none
+    emitted_events: none
+
+idempotency:
+  key: command_id
+  duplicate_behavior: return_original_outcome
+  duplicate_side_effects: prohibited
+
+unspecified_behavior:
+  policy: prohibited_to_assume

@@ -1,0 +1,79 @@
+schema_version: "1.0"
+kind: command
+id: sales.create-order-draft
+version: "2.0.0"
+status: draft
+
+summary: Create Order Draft MUST verify Customer authority and create one draft Order with a Sales-allocated identity and fixed currency.
+
+actor:
+  type: customer
+
+input:
+  command_id:
+    type: CommandId
+    required: true
+  actor_id:
+    type: ActorId
+    required: true
+  customer_id:
+    type: CustomerId
+    required: true
+  currency:
+    type: CurrencyCode
+    required: true
+
+preconditions:
+  - rule_ref: sales.order.must-have-sales-allocated-unique-id
+  - rule_ref: sales.order.must-belong-to-verified-customer
+  - rule_ref: sales.order.currency-is-fixed
+  - contract_ref: customer.verify-order-authority
+
+success:
+  code: ORDER_DRAFT_CREATED
+  result:
+    order_id: Sales-allocated Order ID
+    customer_id: input.customer_id
+    currency: input.currency
+    state: draft
+
+effects:
+  state_changes:
+    - aggregate_ref: sales.order
+      transition_ref: sales.order-lifecycle.create-draft
+      changes:
+        - path: order_id
+          value: allocate a unique Order ID in Sales
+        - path: customer_id
+          value: input.customer_id verified by customer.verify-order-authority
+        - path: currency
+          value: input.currency
+        - path: items
+          value: empty collection
+        - path: total
+          value: zero minor units in input.currency
+  events:
+    - event_ref: sales.order-draft-created
+      count: 1
+
+failures:
+  - code: CUSTOMER_NOT_FOUND
+    when: The Command MUST fail when customer.verify-order-authority reports that input.customer_id does not exist.
+    state_change: none
+    emitted_events: none
+  - code: CUSTOMER_NOT_AUTHORIZED
+    when: The Command MUST fail when customer.verify-order-authority reports that input.actor_id may not act for input.customer_id.
+    state_change: none
+    emitted_events: none
+  - code: COMMAND_ID_CONFLICT
+    when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
+    state_change: none
+    emitted_events: none
+
+idempotency:
+  key: command_id
+  duplicate_behavior: return_original_outcome
+  duplicate_side_effects: prohibited
+
+unspecified_behavior:
+  policy: prohibited_to_assume

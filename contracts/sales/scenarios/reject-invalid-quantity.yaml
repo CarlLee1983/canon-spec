@@ -1,0 +1,63 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-invalid-quantity
+version: "2.0.0"
+status: draft
+summary: Pricing rejects a non-positive or unsupported decimal Quantity without Sales state or Event side effects.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.item-quantity-must-be-positive
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+    - path: pricing.validation.product-1001.quantity-0
+      operator: equals
+      value: invalid
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-invalid-001
+    order_id: order-1001
+    product_id: product-1001
+    price_quote_id: quote-invalid
+    quantity: "0"
+
+then:
+  outcome:
+    status: failure
+    code: INVALID_QUANTITY
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Order Items MUST NOT change.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: Order total MUST NOT change.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

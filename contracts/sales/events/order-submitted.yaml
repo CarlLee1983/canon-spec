@@ -1,0 +1,32 @@
+schema_version: "1.0"
+kind: event
+id: sales.order-submitted
+version: "2.0.0"
+status: draft
+name: OrderSubmitted
+
+meaning: OrderSubmitted MUST mean that Sales moved one non-empty Order Draft with quoted Items to submitted.
+
+producer:
+  context: sales
+  command_ref: sales.submit-order
+
+payload:
+  event_id:
+    type: EventId
+  occurred_at:
+    type: Timestamp
+  command_id:
+    type: CommandId
+  order_id:
+    type: OrderId
+  customer_id:
+    type: CustomerId
+  currency:
+    type: CurrencyCode
+  order_total:
+    type: MoneySnapshot
+
+delivery_semantics:
+  duplicates_possible: true
+  consumer_must_be_idempotent: true

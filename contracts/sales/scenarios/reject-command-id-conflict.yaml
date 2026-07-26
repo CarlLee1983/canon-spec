@@ -1,0 +1,54 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.create-order-draft.reject-command-id-conflict
+version: "2.0.0"
+status: draft
+summary: Reusing a Sales-wide Command ID with different normalized input fails without state or Event effects.
+
+contract_refs:
+  - sales.create-order-draft
+  - sales.order.command-id-conflict
+  - sales.order-draft-created
+
+given:
+  facts:
+    - path: command_registry.command-create-001.command_ref
+      operator: equals
+      value: sales.create-order-draft
+    - path: command_registry.command-create-001.normalized_input
+      operator: equals
+      value: "actor-1001, customer-1001, USD"
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+
+when:
+  command_ref: sales.create-order-draft
+  input:
+    command_id: command-create-001
+    actor_id: actor-1001
+    customer_id: customer-2002
+    currency: EUR
+
+then:
+  outcome:
+    status: failure
+    code: COMMAND_ID_CONFLICT
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: draft
+      - path: orders.with_customer.customer-2002
+        operator: count_equals
+        value: 0
+  events:
+    assertions:
+      - event_ref: sales.order-draft-created
+        count: 0
+  forbidden:
+    - kind: side_effect
+      description: Conflicting reuse MUST NOT allocate an Order ID or replace the original Command outcome.
+    - kind: event
+      event_ref: sales.order-draft-created
+      description: OrderDraftCreated MUST NOT occur.

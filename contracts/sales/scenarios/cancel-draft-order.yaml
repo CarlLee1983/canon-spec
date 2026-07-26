@@ -1,0 +1,62 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.cancel-order.cancel-draft
+version: "2.0.0"
+status: draft
+summary: Cancelling an Order Draft moves it to cancelled without modifying quoted Items or total.
+
+contract_refs:
+  - sales.cancel-order
+  - sales.order.cancelled-is-terminal
+  - sales.order.cancel-before-submission-only
+  - sales.order-cancelled
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-cancel
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-cancel
+
+when:
+  command_ref: sales.cancel-order
+  input:
+    command_id: command-cancel-001
+    order_id: order-1001
+
+then:
+  outcome:
+    status: success
+    code: ORDER_CANCELLED
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: cancelled
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-cancel
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-cancel
+  events:
+    assertions:
+      - event_ref: sales.order-cancelled
+        count: 1
+        payload:
+          order_id: order-1001
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Order Items MUST NOT change during cancellation.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: Order total MUST NOT change during cancellation.
+    - kind: event
+      event_ref: sales.order-submitted
+      description: OrderSubmitted MUST NOT occur.

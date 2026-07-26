@@ -1,0 +1,58 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.cancel-order.reject-after-submit
+version: "2.0.0"
+status: draft
+summary: Cancel Order cannot convert a submitted Order into cancelled because refund and Return require separate contracts.
+
+contract_refs:
+  - sales.cancel-order
+  - sales.order.cancel-before-submission-only
+  - sales.order-cancelled
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: submitted
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+
+when:
+  command_ref: sales.cancel-order
+  input:
+    command_id: command-cancel-submitted-001
+    order_id: order-1001
+
+then:
+  outcome:
+    status: failure
+    code: ORDER_ALREADY_SUBMITTED
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: submitted
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-cancelled
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.state
+      description: Submitted Order MUST NOT transition to cancelled through Cancel Order.
+    - kind: side_effect
+      description: Cancel Order MUST NOT infer refund or Return behavior.
+    - kind: event
+      event_ref: sales.order-cancelled
+      description: OrderCancelled MUST NOT occur.

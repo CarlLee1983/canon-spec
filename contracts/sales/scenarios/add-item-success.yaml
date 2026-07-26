@@ -1,0 +1,92 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.success
+version: "2.0.0"
+status: draft
+summary: A valid fractional Quantity appends one distinct quoted Item and adds Pricing's authoritative subtotal without Sales rounding.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.item-quantity-must-be-positive
+  - sales.order.item-must-have-unique-id
+  - sales.order.item-additions-do-not-merge
+  - sales.order.total-equals-quoted-item-subtotals
+  - sales.order.item-subtotal-is-pricing-authoritative
+  - sales.order.item-price-must-not-be-negative
+  - sales.order.item-retains-price-snapshot
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.currency
+      operator: equals
+      value: USD
+    - path: orders.order-1001.items
+      operator: count_equals
+      value: 1
+    - path: orders.order-1001.total.amount_minor
+      operator: equals
+      value: 500
+    - path: pricing.quotes.quote-2001
+      operator: equals
+      value: "product product-1001, quantity 1.25, unit kilogram, unit price 3.375 USD, item subtotal 422 minor units, valid"
+    - path: sales.next-allocated-order-item-id
+      operator: equals
+      value: item-1002
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-001
+    order_id: order-1001
+    product_id: product-1001
+    price_quote_id: quote-2001
+    quantity: "1.25"
+
+then:
+  outcome:
+    status: success
+    code: ORDER_ITEM_ADDED
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: count_equals
+        value: 2
+      - path: orders.order-1001.items.item-1002.quantity
+        operator: equals
+        value: "1.25"
+      - path: orders.order-1001.items.item-1002.unit_of_measure
+        operator: equals
+        value: kilogram
+      - path: orders.order-1001.items.item-1002.price_quote_id
+        operator: equals
+        value: quote-2001
+      - path: orders.order-1001.items.item-1002.item_subtotal.amount_minor
+        operator: equals
+        value: 422
+      - path: orders.order-1001.total.amount_minor
+        operator: equals
+        value: 922
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 1
+        payload:
+          order_id: order-1001
+          order_item_id: item-1002
+          price_quote_id: quote-2001
+          quantity: "1.25"
+          item_subtotal_amount_minor: 422
+          order_total_amount_minor: 922
+  forbidden:
+    - kind: side_effect
+      description: The new Item MUST NOT merge with the existing Item.
+    - kind: side_effect
+      description: Sales MUST NOT recompute or round Pricing's Item subtotal.
+    - kind: state_change
+      path: orders.order-1001.currency
+      description: Order currency MUST NOT change.

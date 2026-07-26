@@ -1,0 +1,59 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.submit-order.reject-cancelled-resubmission
+version: "2.0.0"
+status: draft
+summary: A cancelled Order cannot return to submitted and produces no submission Event.
+
+contract_refs:
+  - sales.submit-order
+  - sales.order.cancelled-is-terminal
+  - sales.order-submitted
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: cancelled
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+
+when:
+  command_ref: sales.submit-order
+  input:
+    command_id: command-resubmit-cancelled-001
+    order_id: order-1001
+
+then:
+  outcome:
+    status: failure
+    code: ORDER_CANCELLED
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: cancelled
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-submitted
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.state
+      description: Cancelled Order MUST NOT return to draft or submitted.
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Cancelled Order Items MUST NOT change.
+    - kind: event
+      event_ref: sales.order-submitted
+      description: OrderSubmitted MUST NOT occur.

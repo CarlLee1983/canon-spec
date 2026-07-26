@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canon-spec.local/schemas/context.schema.json",
+  "title": "Bounded Context Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "version",
+    "status",
+    "summary",
+    "responsibilities",
+    "owned_aggregates",
+    "commands",
+    "events",
+    "state_machines",
+    "interactions"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "context" },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "$ref": "#/$defs/version" },
+    "status": { "$ref": "#/$defs/status" },
+    "summary": { "type": "string", "minLength": 1 },
+    "responsibilities": {
+      "type": "object",
+      "required": ["includes", "excludes"],
+      "properties": {
+        "includes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "excludes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "owned_aggregates": { "$ref": "#/$defs/refs" },
+    "commands": { "$ref": "#/$defs/refs" },
+    "events": { "$ref": "#/$defs/refs" },
+    "state_machines": { "$ref": "#/$defs/refs" },
+    "interactions": { "$ref": "#/$defs/refs" },
+    "clarification_refs": { "$ref": "#/$defs/refs" },
+    "explanatory_notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "status": {
+      "enum": ["draft", "candidate", "accepted", "deprecated", "retired"]
+    },
+    "refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    }
+  }
+}

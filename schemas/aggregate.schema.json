@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canon-spec.local/schemas/aggregate.schema.json",
+  "title": "Aggregate Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "version",
+    "status",
+    "context_ref",
+    "summary",
+    "identity",
+    "initial_state",
+    "states",
+    "attributes",
+    "invariants",
+    "state_machine_ref"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "aggregate" },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "$ref": "#/$defs/version" },
+    "status": { "$ref": "#/$defs/status" },
+    "context_ref": { "$ref": "#/$defs/id" },
+    "summary": { "type": "string", "minLength": 1 },
+    "identity": {
+      "type": "object",
+      "required": ["field", "type", "rule_ref"],
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "rule_ref": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "initial_state": { "type": "string", "minLength": 1 },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "attributes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "required"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" },
+          "item_type": { "type": "string", "minLength": 1 },
+          "derived": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "category"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "statement": {
+            "type": "string",
+            "pattern": "\\b(MUST|MUST NOT|SHALL|SHALL NOT)\\b"
+          },
+          "category": {
+            "enum": ["identity", "ownership", "value", "lifecycle", "calculation", "idempotency", "event"]
+          },
+          "applies_when": { "type": "string", "minLength": 1 },
+          "clarification_ref": { "$ref": "#/$defs/id" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "state_machine_ref": { "$ref": "#/$defs/id" },
+    "clarification_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    },
+    "explanatory_notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "status": {
+      "enum": ["draft", "candidate", "accepted", "deprecated", "retired"]
+    }
+  }
+}

@@ -1,0 +1,169 @@
+schema_version: "1.0"
+kind: vocabulary
+id: sales.vocabulary
+version: "2.0.0"
+status: draft
+context_ref: sales
+
+terms:
+  - term: order
+    display_name: Order
+    definition: Within Sales, Order MUST mean the Aggregate that records a verified Customer's intended purchase and protects quoted Item, total, lifecycle, and idempotency invariants.
+    not_equivalent_to:
+      - shopping_cart
+      - quotation
+      - invoice
+    notes:
+      - "EXPLANATORY: An Order is the consistency boundary used by this Sales contract."
+
+  - term: order_draft
+    display_name: Order Draft
+    definition: Order Draft MUST mean an Order in draft state that may accept quoted Items, be submitted, or be cancelled.
+    not_equivalent_to:
+      - shopping_cart
+      - quotation
+      - submitted_order
+    notes:
+      - "EXPLANATORY: Draft describes lifecycle state, not storage durability."
+
+  - term: submitted_order
+    display_name: Submitted Order
+    definition: Submitted Order MUST mean an Order that successfully completed Submit Order and whose Items and total are immutable within Sales.
+    not_equivalent_to:
+      - order_draft
+      - cancelled_order
+      - paid_order
+      - fulfilled_order
+    notes:
+      - "EXPLANATORY: Submission does not imply payment, fulfillment, shipment, invoicing, or cancellation eligibility."
+
+  - term: cancelled_order
+    display_name: Cancelled Order
+    definition: Cancelled Order MUST mean an Order Draft that successfully completed Cancel Order before submission and is terminal within Sales.
+    not_equivalent_to:
+      - submitted_order
+      - refunded_order
+      - returned_order
+      - deleted_order
+    notes:
+      - "EXPLANATORY: Cancellation is a pre-submission business state, not a refund or Return."
+
+  - term: order_item
+    display_name: Order Item
+    definition: Order Item MUST mean one distinct, stably identified Product, Quantity, Unit of Measure, and authoritative Pricing Quote snapshot held within one Order.
+    not_equivalent_to:
+      - product
+      - inventory_record
+      - invoice_line
+    notes:
+      - "EXPLANATORY: Equivalent successful additions remain separate Items in this revision."
+
+  - term: quantity
+    display_name: Quantity
+    definition: Quantity MUST mean the positive base-10 decimal amount accepted by Pricing for a Product and Unit of Measure and preserved exactly by Sales.
+    not_equivalent_to:
+      - inventory_level
+      - fulfilled_quantity
+      - monetary_amount
+    notes:
+      - "EXPLANATORY: Pricing owns permitted fractional precision and increment rules."
+
+  - term: unit_of_measure
+    display_name: Unit of Measure
+    definition: Unit of Measure MUST mean the Pricing-authoritative measurement unit associated with the quoted Quantity.
+    not_equivalent_to:
+      - currency
+      - inventory_location
+    notes:
+      - "EXPLANATORY: Examples may include each, kilogram, metre, or kilowatt-hour, but examples do not create an allowed-unit registry."
+
+  - term: unit_price
+    display_name: Unit Price
+    definition: Unit Price MUST mean the base-10 decimal per-Unit-of-Measure value returned by Pricing as part of a Price Quote.
+    not_equivalent_to:
+      - order_total
+      - item_subtotal
+      - live_catalog_price
+    notes:
+      - "EXPLANATORY: Sales preserves Unit Price for traceability and does not use it to repeat Pricing arithmetic; zero is permitted and negative is prohibited."
+
+  - term: price_quote
+    display_name: Price Quote
+    definition: Price Quote MUST mean Pricing's authoritative response for one Product and exact Quantity, including validity, Unit of Measure, Unit Price, Currency Code, and final Item subtotal.
+    not_equivalent_to:
+      - order
+      - invoice
+      - payment_authorization
+    notes:
+      - "EXPLANATORY: Pricing owns Quantity validation and any monetary rounding required to produce the Item subtotal."
+
+  - term: price_snapshot
+    display_name: Price Snapshot
+    definition: Price Snapshot MUST mean the immutable Product, Quantity, Unit of Measure, Unit Price, Currency Code, Item subtotal, and Price Quote identity retained by Sales when an Item is added.
+    not_equivalent_to:
+      - live_catalog_price
+      - discount
+      - tax
+    notes:
+      - "EXPLANATORY: Later live price changes cannot alter the retained snapshot."
+
+  - term: item_subtotal
+    display_name: Item Subtotal
+    definition: Item Subtotal MUST mean the final Money value calculated and rounded by Pricing for the exact quoted Product and Quantity and accepted unchanged by Sales.
+    not_equivalent_to:
+      - unit_price
+      - order_total
+    notes:
+      - "EXPLANATORY: It is represented in the Currency Code's minor unit when added to the Order total."
+
+  - term: currency_code
+    display_name: Currency Code
+    definition: Currency Code MUST mean the ISO 4217 code fixed when the Order Draft is created and shared by every Item subtotal and the Order total.
+    not_equivalent_to:
+      - country
+      - locale
+      - unit_of_measure
+    notes:
+      - "EXPLANATORY: Display decimals follow the currency; Sales arithmetic sums integer minor-unit subtotals."
+
+  - term: customer
+    display_name: Customer
+    definition: Customer MUST mean the party whose existence and actor authority are confirmed by Customer before Sales creates an Order.
+    not_equivalent_to:
+      - user_account
+      - payer
+      - shipment_recipient
+    notes:
+      - "EXPLANATORY: Customer owns existence and authorization policy; Sales retains only the verified association."
+
+  - term: command_id
+    display_name: Command ID
+    definition: Command ID MUST mean the caller-supplied Sales-wide identity used to replay the same normalized Command request or reject a conflicting reuse.
+    not_equivalent_to:
+      - order_id
+      - event_id
+      - correlation_id
+    notes:
+      - "EXPLANATORY: The same ID with another Command or input is a COMMAND_ID_CONFLICT."
+
+  - term: domain_event
+    display_name: Domain Event
+    definition: Domain Event MUST mean an immutable statement that a defined Sales business fact has already occurred.
+    not_equivalent_to:
+      - command
+      - request
+      - delivery_attempt
+    notes:
+      - "EXPLANATORY: Delivery may repeat even though the represented business occurrence does not."
+
+  - term: normalized_command_input
+    display_name: Normalized Command Input
+    definition: Normalized Command Input MUST mean type-aware semantic comparison in which opaque identifiers compare exactly, Currency Codes compare in uppercase form, and base-10 Decimal Quantities compare by numeric value so equivalent representations such as 1.0 and 1.00 are equal.
+    not_equivalent_to:
+      - raw_serialized_bytes
+      - command_id
+    notes:
+      - "EXPLANATORY: Transport property order and insignificant decimal trailing zeros cannot turn a replay into a conflict."
+
+explanatory_notes:
+  - Cart, Quotation, Invoice, Payment, Refund, Return, Shipment, Fulfillment, and Inventory remain separate concepts and scopes.

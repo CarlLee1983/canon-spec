@@ -1,0 +1,49 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.create-order-draft.reject-customer-not-found
+version: "2.0.0"
+status: draft
+summary: Customer rejection for a missing Customer prevents Order creation and Event production.
+
+contract_refs:
+  - sales.create-order-draft
+  - customer.verify-order-authority
+  - sales.order.must-belong-to-verified-customer
+  - sales.order-draft-created
+
+given:
+  facts:
+    - path: customer.customers.customer-missing
+      operator: exists
+      value: false
+    - path: orders
+      operator: count_equals
+      value: 0
+
+when:
+  command_ref: sales.create-order-draft
+  input:
+    command_id: command-create-missing-customer-001
+    actor_id: actor-1001
+    customer_id: customer-missing
+    currency: USD
+
+then:
+  outcome:
+    status: failure
+    code: CUSTOMER_NOT_FOUND
+  state:
+    assertions:
+      - path: orders
+        operator: count_equals
+        value: 0
+  events:
+    assertions:
+      - event_ref: sales.order-draft-created
+        count: 0
+  forbidden:
+    - kind: side_effect
+      description: Sales MUST NOT allocate an Order ID or create an Order.
+    - kind: event
+      event_ref: sales.order-draft-created
+      description: OrderDraftCreated MUST NOT occur.

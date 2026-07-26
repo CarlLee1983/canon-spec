@@ -1,0 +1,71 @@
+schema_version: "1.0"
+kind: command
+id: sales.submit-order
+version: "2.0.0"
+status: draft
+
+summary: Submit Order MUST move one eligible non-empty Order Draft to submitted and create one OrderSubmitted business occurrence.
+
+actor:
+  type: customer
+
+input:
+  command_id:
+    type: CommandId
+    required: true
+  order_id:
+    type: OrderId
+    required: true
+
+preconditions:
+  - rule_ref: sales.order.submitted-must-have-items
+  - rule_ref: sales.order.cancelled-is-terminal
+  - rule_ref: sales.order.single-order-submitted-event
+  - contract_ref: sales.order-lifecycle
+
+success:
+  code: ORDER_SUBMITTED
+  result:
+    order_id: input.order_id
+    state: submitted
+
+effects:
+  state_changes:
+    - aggregate_ref: sales.order
+      transition_ref: sales.order-lifecycle.submit
+      changes:
+        - path: state
+          value: submitted
+  events:
+    - event_ref: sales.order-submitted
+      count: 1
+
+failures:
+  - code: ORDER_NOT_FOUND
+    when: The Command MUST fail when input.order_id does not identify an Order.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_EMPTY
+    when: The Command MUST fail when the identified Order has no Order Items.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_ALREADY_SUBMITTED
+    when: The Command MUST fail when the identified Order is already submitted and input.command_id is not the Command ID of its successful submission.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_CANCELLED
+    when: The Command MUST fail when the identified Order is cancelled.
+    state_change: none
+    emitted_events: none
+  - code: COMMAND_ID_CONFLICT
+    when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
+    state_change: none
+    emitted_events: none
+
+idempotency:
+  key: command_id
+  duplicate_behavior: return_original_outcome
+  duplicate_side_effects: prohibited
+
+unspecified_behavior:
+  policy: prohibited_to_assume

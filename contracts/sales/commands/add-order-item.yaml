@@ -1,0 +1,112 @@
+schema_version: "1.0"
+kind: command
+id: sales.add-order-item
+version: "2.0.0"
+status: draft
+
+summary: Add Order Item MUST append one distinct Pricing-quoted Item with a positive decimal Quantity to an eligible Order Draft.
+
+actor:
+  type: customer
+
+input:
+  command_id:
+    type: CommandId
+    required: true
+  order_id:
+    type: OrderId
+    required: true
+  product_id:
+    type: ProductId
+    required: true
+  price_quote_id:
+    type: PriceQuoteId
+    required: true
+  quantity:
+    type: DecimalQuantity
+    required: true
+
+preconditions:
+  - rule_ref: sales.order.item-quantity-must-be-positive
+  - rule_ref: sales.order.item-must-have-unique-id
+  - rule_ref: sales.order.item-additions-do-not-merge
+  - rule_ref: sales.order.submitted-items-immutable
+  - rule_ref: sales.order.cancelled-is-terminal
+  - rule_ref: sales.order.total-equals-quoted-item-subtotals
+  - rule_ref: sales.order.item-subtotal-is-pricing-authoritative
+  - rule_ref: sales.order.item-price-must-not-be-negative
+  - rule_ref: sales.order.item-retains-price-snapshot
+  - contract_ref: sales.order-lifecycle
+  - contract_ref: pricing.quote-order-item
+
+success:
+  code: ORDER_ITEM_ADDED
+  result:
+    order_id: input.order_id
+    order_item_id: Sales-allocated Order Item ID
+    state: draft
+    item_subtotal: authoritative subtotal from pricing.quote-order-item
+    order_total: sum governed by sales.order.total-equals-quoted-item-subtotals
+
+effects:
+  state_changes:
+    - aggregate_ref: sales.order
+      transition_ref: sales.order-lifecycle.add-item
+      changes:
+        - path: items
+          value: append one distinct Item with a Sales-allocated ID and the complete Pricing Quote snapshot
+        - path: total
+          value: add the authoritative quoted Item subtotal without Sales rounding
+  events:
+    - event_ref: sales.order-item-added
+      count: 1
+
+failures:
+  - code: ORDER_NOT_FOUND
+    when: The Command MUST fail when input.order_id does not identify an Order.
+    state_change: none
+    emitted_events: none
+  - code: INVALID_QUANTITY
+    when: The Command MUST fail when input.quantity is not greater than zero or Pricing rejects its precision or Unit of Measure compatibility.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_ALREADY_SUBMITTED
+    when: The Command MUST fail when the identified Order is in submitted state.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_CANCELLED
+    when: The Command MUST fail when the identified Order is in cancelled state.
+    state_change: none
+    emitted_events: none
+  - code: PRICE_QUOTE_NOT_FOUND
+    when: The Command MUST fail when pricing.quote-order-item cannot identify input.price_quote_id.
+    state_change: none
+    emitted_events: none
+  - code: PRICE_QUOTE_EXPIRED
+    when: The Command MUST fail when pricing.quote-order-item reports that input.price_quote_id is expired.
+    state_change: none
+    emitted_events: none
+  - code: PRICE_QUOTE_MISMATCH
+    when: The Command MUST fail when the Price Quote does not match input.product_id or input.quantity.
+    state_change: none
+    emitted_events: none
+  - code: CURRENCY_MISMATCH
+    when: The Command MUST fail when the Price Quote currency differs from the Order currency.
+    state_change: none
+    emitted_events: none
+  - code: INVALID_PRICE_QUOTE
+    when: The Command MUST fail when Pricing reports a negative Unit Price, negative Item subtotal, or internally invalid Quote evidence.
+    state_change: none
+    emitted_events: none
+  - code: COMMAND_ID_CONFLICT
+    when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
+    state_change: none
+    emitted_events: none
+
+idempotency:
+  key: command_id
+  duplicate_behavior: return_original_outcome
+  duplicate_side_effects: prohibited
+
+unspecified_behavior:
+  policy: prohibited_to_assume

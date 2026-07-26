@@ -1,0 +1,35 @@
+schema_version: "1.0"
+kind: interaction
+id: pricing.quote-order-item
+version: "1.0.0"
+status: draft
+producer_context_ref: pricing
+consumer_context_ref: sales
+purpose: Pricing MUST resolve one Price Quote for an exact Product and decimal Quantity and return all evidence Sales must preserve without repeating Pricing arithmetic.
+trigger_ref: sales.add-order-item
+
+success:
+  outcome: Pricing MUST return price_quote_id, product_id, exact quantity, unit_of_measure, unit_price, currency, authoritative item_subtotal, and quote validity for the request.
+
+failures:
+  - code: PRICE_QUOTE_NOT_FOUND
+    outcome: Pricing MUST report that price_quote_id does not identify a Price Quote.
+  - code: PRICE_QUOTE_EXPIRED
+    outcome: Pricing MUST report that the Price Quote is no longer valid.
+  - code: PRICE_QUOTE_MISMATCH
+    outcome: Pricing MUST report that the Price Quote does not match the requested Product or exact Quantity.
+  - code: INVALID_QUANTITY
+    outcome: Pricing MUST report that Quantity is not positive or violates Product precision, increment, or Unit of Measure rules.
+  - code: INVALID_PRICE_QUOTE
+    outcome: Pricing MUST report that Unit Price or Item subtotal is negative or that required quote evidence is internally invalid.
+
+idempotency:
+  key: price_quote_id plus product_id plus exact normalized decimal quantity
+  duplicate_side_effects: prohibited
+
+duplicate_handling:
+  detection_key: same Price Quote resolution request
+  outcome: Repeated resolution MUST return the same quote evidence while valid and MUST NOT create a Sales side effect.
+
+unspecified_behavior:
+  policy: prohibited_to_assume

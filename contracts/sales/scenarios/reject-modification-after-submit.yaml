@@ -1,0 +1,62 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-after-submit
+version: "2.0.0"
+status: draft
+summary: A submitted Order rejects an Item addition and preserves all existing state.
+
+contract_refs:
+  - sales.add-order-item
+  - sales.order.submitted-items-immutable
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: submitted
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-after-submit-001
+    order_id: order-1001
+    product_id: product-1002
+    price_quote_id: quote-2002
+    quantity: "1"
+
+then:
+  outcome:
+    status: failure
+    code: ORDER_ALREADY_SUBMITTED
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: submitted
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Submitted Order Items MUST NOT change.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: Submitted Order total MUST NOT change.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

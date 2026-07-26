@@ -1,0 +1,48 @@
+schema_version: "1.0"
+kind: state-machine
+id: sales.order-lifecycle
+version: "2.0.0"
+status: draft
+aggregate_ref: sales.order
+
+initial_state: draft
+
+states:
+  - name: draft
+    terminal: false
+  - name: submitted
+    terminal: true
+  - name: cancelled
+    terminal: true
+
+transitions:
+  - id: sales.order-lifecycle.create-draft
+    trigger_ref: sales.create-order-draft
+    from: absent
+    to: draft
+
+  - id: sales.order-lifecycle.add-item
+    trigger_ref: sales.add-order-item
+    from: draft
+    to: draft
+
+  - id: sales.order-lifecycle.submit
+    trigger_ref: sales.submit-order
+    from: draft
+    to: submitted
+
+  - id: sales.order-lifecycle.cancel-draft
+    trigger_ref: sales.cancel-order
+    from: draft
+    to: cancelled
+
+forbidden_transitions:
+  - rule_ref: sales.order.cancelled-is-terminal
+    from: cancelled
+    to: draft
+  - rule_ref: sales.order.cancelled-is-terminal
+    from: cancelled
+    to: submitted
+  - rule_ref: sales.order.cancel-before-submission-only
+    from: submitted
+    to: cancelled

@@ -1,0 +1,63 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-negative-price-quote
+version: "2.0.0"
+status: draft
+summary: Pricing rejects a negative Item value so Sales cannot model a discount, refund, Return, or credit as an Order Item.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.item-price-must-not-be-negative
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+    - path: pricing.quotes.quote-negative.item_subtotal.amount_minor
+      operator: equals
+      value: -100
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-negative-001
+    order_id: order-1001
+    product_id: product-1001
+    price_quote_id: quote-negative
+    quantity: "1"
+
+then:
+  outcome:
+    status: failure
+    code: INVALID_PRICE_QUOTE
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: A negative Quote MUST NOT become an Order Item.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: A negative Quote MUST NOT reduce Order total.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

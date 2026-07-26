@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Sales Order 商業邏輯導覽</title>
+  <style>
+    :root {
+      color-scheme: only light;
+      --desk: #cec4b2;
+      --desk-ink: #5d574d;
+      --paper: #f5efdf;
+      --paper-deep: #ebe1cc;
+      --paper-note: #f3dfa2;
+      --ink: #292820;
+      --ink-muted: #666052;
+      --rule: #b8aa90;
+      --rule-light: rgba(105, 91, 66, .14);
+      --red: #94382f;
+      --red-soft: #ead2c7;
+      --green: #35634b;
+      --green-soft: #d8e2d5;
+      --blue: #3f6274;
+      --blue-soft: #d8e2e5;
+      --shadow: 0 2px 0 rgba(71, 61, 45, .2), 0 16px 32px rgba(71, 61, 45, .16);
+      --paper-grain:
+        radial-gradient(circle at 12% 18%, rgba(76, 62, 39, .045) 0 1px, transparent 1.4px),
+        radial-gradient(circle at 82% 63%, rgba(76, 62, 39, .035) 0 1px, transparent 1.5px),
+        linear-gradient(96deg, transparent 0 48%, rgba(89, 73, 45, .025) 49%, transparent 51%);
+      --bg: var(--desk);
+      --surface: var(--paper);
+      --surface-soft: var(--paper-deep);
+      --text: var(--ink);
+      --muted: var(--ink-muted);
+      --border: var(--rule);
+      --primary: var(--red);
+      --primary-soft: var(--red-soft);
+      --success: var(--green);
+      --success-soft: var(--green-soft);
+      --danger: var(--red);
+      --danger-soft: var(--red-soft);
+      --warning: #765312;
+      --warning-soft: var(--paper-note);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--desk); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background-color: var(--desk);
+      background-image:
+        linear-gradient(rgba(67, 57, 41, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(67, 57, 41, .035) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text);
+      font-family: "Iowan Old Style", "Baskerville", "Noto Serif TC", "Songti TC", Georgia, serif;
+      line-height: 1.72;
+    }
+    ::selection { background: var(--red-soft); color: var(--ink); }
+    a { color: var(--primary); text-decoration-thickness: 1px; text-underline-offset: .24em; }
+    a:hover { text-decoration-thickness: 2px; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .92em;
+      overflow-wrap: anywhere;
+    }
+    .shell { width: min(1080px, calc(100% - 32px)); margin-inline: auto; }
+    header {
+      position: relative;
+      margin-top: 30px;
+      padding: clamp(32px, 6vw, 64px);
+      overflow: hidden;
+      background-color: var(--paper);
+      background-image: var(--paper-grain);
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow);
+    }
+    header::before {
+      content: "DRAFT · 2.0.0";
+      position: absolute;
+      top: 32px;
+      right: -32px;
+      width: 190px;
+      padding: 5px 0;
+      color: var(--red);
+      border: 2px solid var(--red);
+      font: 700 .76rem/1 ui-monospace, monospace;
+      letter-spacing: .13em;
+      text-align: center;
+      transform: rotate(7deg);
+      opacity: .78;
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      pointer-events: none;
+      border: 1px solid var(--rule-light);
+    }
+    .eyebrow {
+      display: inline-block;
+      padding-bottom: 4px;
+      color: var(--red);
+      border-bottom: 2px solid currentColor;
+      font: 700 .78rem/1.2 ui-monospace, SFMono-Regular, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 18px 0 12px; max-width: 780px; font-size: clamp(2.15rem, 5vw, 4rem); line-height: 1.06; letter-spacing: -.045em; }
+    h2 { margin: 0 0 18px; padding-bottom: 10px; border-bottom: 3px double var(--rule); font-size: clamp(1.45rem, 3vw, 2.1rem); line-height: 1.2; }
+    h3 { margin: 0 0 10px; font-size: 1.08rem; }
+    p { margin: 0 0 1em; }
+    .lede { max-width: 790px; color: var(--muted); font-size: 1.08rem; }
+    .notice {
+      position: relative;
+      width: min(720px, 94%);
+      margin: 26px 0 4px 10px;
+      padding: 16px 20px;
+      background-color: var(--warning-soft);
+      background-image: var(--paper-grain);
+      border: 1px solid rgba(108, 79, 21, .35);
+      box-shadow: 2px 4px 10px rgba(73, 58, 29, .12);
+      color: var(--text);
+      transform: rotate(-.45deg);
+    }
+    .notice::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 42%;
+      width: 96px;
+      height: 18px;
+      background: rgba(226, 211, 174, .75);
+      border-inline: 1px solid rgba(117, 99, 65, .15);
+      transform: rotate(1.5deg);
+    }
+    .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 24px 0 0; }
+    .stat {
+      padding: 14px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px dashed var(--rule);
+      text-align: center;
+    }
+    .stat:nth-child(odd) { transform: rotate(-.25deg); }
+    .stat:nth-child(even) { transform: rotate(.2deg); }
+    .stat strong { display: block; color: var(--red); font: 700 1.7rem/1 ui-monospace, monospace; }
+    .stat span { color: var(--muted); font: .76rem/1.2 ui-monospace, monospace; letter-spacing: .035em; }
+    main { display: grid; gap: 28px; padding: 28px 0 56px; counter-reset: folio; }
+    section {
+      position: relative;
+      padding: clamp(24px, 4vw, 38px);
+      background-color: var(--paper);
+      background-image: var(--paper-grain);
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow);
+      counter-increment: folio;
+    }
+    section::after {
+      content: "FOLIO " counter(folio, decimal-leading-zero);
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      color: var(--ink-muted);
+      font: .68rem/1 ui-monospace, monospace;
+      letter-spacing: .12em;
+      opacity: .72;
+    }
+    .section-intro { color: var(--muted); max-width: 830px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 18px 0 6px; color: var(--muted); font: .82rem/1.4 ui-monospace, monospace; }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch { width: 24px; height: 3px; background: var(--red); }
+    .swatch.forbidden { background: var(--danger); border-top: 2px dashed var(--danger); height: 0; }
+    .diagram-wrap { overflow-x: auto; padding: 12px 0 0; }
+    .state-diagram { display: block; width: 100%; min-width: 720px; height: auto; }
+    .state-diagram .node rect { fill: var(--paper-deep); stroke: var(--ink-muted); stroke-width: 2; rx: 2px; transition: .2s ease; }
+    .state-diagram .node text { fill: var(--text); font-family: ui-monospace, monospace; font-weight: 700; }
+    .state-diagram .node .sub { fill: var(--muted); font-weight: 400; font-size: 13px; }
+    .state-diagram .edge { fill: none; stroke: var(--ink-muted); stroke-width: 2; stroke-linecap: round; marker-end: url(#arrow); transition: .2s ease; }
+    .state-diagram .edge-label { fill: var(--muted); font: 600 13px/1 ui-monospace, monospace; }
+    .state-diagram .forbidden-edge { fill: none; stroke: var(--danger); stroke-width: 2; stroke-dasharray: 8 7; }
+    .state-diagram .forbidden-label { fill: var(--danger); font: 12px/1 ui-monospace, monospace; }
+    .state-diagram [data-command].active { stroke: var(--red); stroke-width: 5; }
+    .state-diagram .node.active rect { stroke: var(--red); fill: var(--red-soft); stroke-width: 3; }
+    .command-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-top: 22px; }
+    .command-list { position: sticky; top: 16px; display: grid; align-content: start; gap: 6px; align-self: start; }
+    button {
+      position: relative;
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      background-color: var(--paper-deep);
+      background-image: var(--paper-grain);
+      color: var(--text);
+      padding: 12px 14px 12px 18px;
+      font: 600 .88rem/1.35 ui-monospace, monospace;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    button::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: transparent; }
+    button:hover { border-color: var(--red); transform: translateX(3px); }
+    button:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+    button[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff8e8; transform: translateX(8px); }
+    button[aria-pressed="true"]::before { background: #fff8e8; opacity: .7; }
+    .command-detail {
+      min-width: 0;
+      padding: 24px;
+      background-color: var(--paper-deep);
+      background-image:
+        repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule-light) 32px),
+        var(--paper-grain);
+      border: 1px solid var(--rule);
+      box-shadow: inset 3px 0 0 var(--red-soft);
+    }
+    .detail-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .pill { display: inline-flex; align-items: center; padding: 4px 8px; border: 1px solid var(--blue); background: transparent; color: var(--blue); font: 700 .72rem/1.2 ui-monospace, monospace; letter-spacing: .02em; }
+    .pill.success { border-color: var(--green); background: transparent; color: var(--green); }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .compact-list { margin: 8px 0 0; padding-left: 20px; }
+    .failure-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .failure { padding: 4px 7px; border: 1px solid var(--red); background: transparent; color: var(--red); font: 600 .76rem/1.25 ui-monospace, monospace; }
+    .boundaries { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 20px; }
+    .boundary { padding: 20px; background: rgba(255, 255, 255, .035); border: 1px solid var(--rule); box-shadow: 2px 3px 0 var(--rule-light); }
+    .boundary:first-child { transform: rotate(-.3deg); }
+    .boundary:last-child { transform: rotate(.3deg); }
+    .boundary.sales { border: 2px solid var(--red); background: var(--red-soft); transform: translateY(-5px); }
+    .boundary ul { margin: 8px 0 0; padding-left: 20px; }
+    .flow { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 16px; color: var(--muted); text-align: center; }
+    .flow strong { color: var(--text); }
+    .flow .arrow { color: var(--red); font-size: 1.4rem; }
+    .table-wrap { overflow-x: auto; margin-top: 18px; }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--rule-light); text-align: left; vertical-align: top; }
+    th { color: var(--muted); border-bottom: 2px solid var(--rule); font: 700 .76rem/1.3 ui-monospace, monospace; letter-spacing: .05em; text-transform: uppercase; }
+    tbody tr:hover { background: var(--paper-deep); }
+    td code { color: var(--red); font-weight: 700; }
+    .status-ok { color: var(--success); font-weight: 700; }
+    .status-no { color: var(--danger); font-weight: 700; }
+    .rule-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+    details { padding: 15px 17px; background: rgba(255, 255, 255, .025); border: 1px solid var(--rule); }
+    details[open] { background: var(--paper-deep); }
+    details summary { cursor: pointer; color: var(--red); font: 700 .9rem/1.4 ui-monospace, monospace; }
+    details summary:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+    details ul { margin-bottom: 0; padding-left: 20px; }
+    .agent-path { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 20px; counter-reset: step; }
+    .agent-step { position: relative; min-height: 150px; padding: 48px 14px 14px; border: 1px solid var(--rule); border-top: 4px solid var(--red); }
+    .agent-step::before { counter-increment: step; content: counter(step); position: absolute; top: 12px; left: 14px; width: 25px; height: 25px; display: grid; place-items: center; border: 2px solid var(--red); border-radius: 50%; color: var(--red); font: 700 .82rem/1 ui-monospace, monospace; transform: rotate(-5deg); }
+    footer { padding: 4px 0 44px; color: var(--desk-ink); font: .78rem/1.5 ui-monospace, monospace; text-align: center; }
+
+    @media (max-width: 860px) {
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .command-layout { grid-template-columns: 1fr; }
+      .command-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .command-list { position: static; }
+      button[aria-pressed="true"] { transform: translateY(-3px); }
+      .boundaries { grid-template-columns: 1fr; }
+      .boundary, .boundary:first-child, .boundary:last-child, .boundary.sales { transform: none; }
+      .flow { flex-direction: column; }
+      .flow .arrow { transform: rotate(90deg); }
+      .agent-path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 20px, 1160px); }
+      header { margin-top: 10px; padding: 40px 22px 26px; }
+      header::before { top: 20px; right: -52px; }
+      header::after { inset: 9px; }
+      .stats, .detail-grid, .rule-groups, .agent-path { grid-template-columns: 1fr; }
+      .command-list { grid-template-columns: 1fr; }
+      section { padding: 28px 18px 22px; }
+      section::after { top: 9px; right: 12px; }
+      .notice { width: 100%; margin-left: 0; }
+      .stat:nth-child(n) { transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      button, .state-diagram * { transition: none !important; }
+    }
+    @media print {
+      :root { color-scheme: light; --desk: #fff; --paper: #fffdf7; --paper-deep: #f5f0e4; --ink: #111; --ink-muted: #444; --rule: #999; --red: #7b241f; }
+      body { background: #fff; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      header { margin-top: 0; }
+      main { gap: 12mm; }
+      .command-list { position: static; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <div class="eyebrow">Canon Spec · Sales 2.0.0</div>
+    <h1>Order 商業邏輯導覽</h1>
+    <p class="lede">從狀態、Command、跨 Context 邊界與驗收情境理解第一個 Aggregate。畫面是繁體中文導讀；穩定 ID、失敗碼與 YAML 契約保持原文，方便人與 AI 使用同一套語言。</p>
+    <div class="notice"><strong>非規範性文件：</strong>若本頁與契約不一致，一律以 <a href="../../contracts/">contracts/</a> 及所選 implementation manifest 為準。</div>
+    <div class="stats" aria-label="契約統計">
+      <div class="stat"><strong>1</strong><span>Aggregate</span></div>
+      <div class="stat"><strong>4</strong><span>Commands / Events</span></div>
+      <div class="stat"><strong>17</strong><span>Invariants</span></div>
+      <div class="stat"><strong>19</strong><span>Scenarios</span></div>
+      <div class="stat"><strong>8</strong><span>Resolved clarifications</span></div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section aria-labelledby="lifecycle-title">
+      <h2 id="lifecycle-title">Order 生命週期</h2>
+      <p class="section-intro">Order 只能從不存在建立為 draft。draft 可反覆加入 Item，之後選擇提交或取消；submitted 與 cancelled 都是 Sales 2.0.0 的終點。</p>
+      <div class="legend"><span><i class="swatch"></i>選取的 Command</span><span><i class="swatch forbidden"></i>明確禁止</span></div>
+      <div class="diagram-wrap">
+        <svg class="state-diagram" viewBox="0 0 1000 340" role="img" aria-labelledby="state-title state-desc">
+          <title id="state-title">Order 狀態機</title>
+          <desc id="state-desc">不存在可建立為草稿；草稿可以新增品項、提交或取消；提交後不能透過取消命令進入取消狀態。</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"></path></marker>
+          </defs>
+          <path class="edge" data-command="create" d="M155 170 H310"></path>
+          <text class="edge-label" x="175" y="153">CreateOrderDraft</text>
+          <path class="edge" data-command="add" d="M390 105 C390 38 560 38 560 105"></path>
+          <text class="edge-label" x="413" y="55">AddOrderItem · self</text>
+          <path class="edge" data-command="submit" d="M570 145 H725"></path>
+          <text class="edge-label" x="600" y="128">SubmitOrder</text>
+          <path class="edge" data-command="cancel" d="M555 203 C625 274 700 274 755 226"></path>
+          <text class="edge-label" x="584" y="284">CancelOrder</text>
+          <path class="forbidden-edge" d="M805 205 C890 256 890 288 810 298"></path>
+          <text class="forbidden-label" x="815" y="272">不是 refund / Return</text>
+          <g class="node" data-node="absent"><rect x="25" y="125" width="130" height="90" rx="18"></rect><text x="90" y="165" text-anchor="middle">absent</text><text class="sub" x="90" y="188" text-anchor="middle">尚未建立</text></g>
+          <g class="node" data-node="draft"><rect x="310" y="105" width="260" height="130" rx="22"></rect><text x="440" y="157" text-anchor="middle">draft</text><text class="sub" x="440" y="184" text-anchor="middle">可加入 quoted Item</text><text class="sub" x="440" y="205" text-anchor="middle">可提交或取消</text></g>
+          <g class="node" data-node="submitted"><rect x="725" y="100" width="230" height="105" rx="22"></rect><text x="840" y="147" text-anchor="middle">submitted</text><text class="sub" x="840" y="174" text-anchor="middle">Sales terminal</text></g>
+          <g class="node" data-node="cancelled"><rect x="725" y="245" width="230" height="80" rx="22"></rect><text x="840" y="280" text-anchor="middle">cancelled</text><text class="sub" x="840" y="303" text-anchor="middle">提交前取消 · terminal</text></g>
+        </svg>
+      </div>
+    </section>
+
+    <section aria-labelledby="commands-title">
+      <h2 id="commands-title">Command 行為瀏覽</h2>
+      <p class="section-intro">選擇 Command，查看輸入、成功結果、失敗碼、Event 與主要規則；上方狀態圖會同步標示路徑。</p>
+      <div class="command-layout">
+        <div class="command-list" role="group" aria-label="選擇 Command">
+          <button type="button" data-select-command="create" aria-pressed="true">Create Order Draft</button>
+          <button type="button" data-select-command="add" aria-pressed="false">Add Order Item</button>
+          <button type="button" data-select-command="submit" aria-pressed="false">Submit Order</button>
+          <button type="button" data-select-command="cancel" aria-pressed="false">Cancel Order</button>
+        </div>
+        <article class="command-detail" aria-live="polite">
+          <div class="detail-meta"><span class="pill" id="command-id"></span><span class="pill success" id="success-code"></span><span class="pill" id="event-id"></span></div>
+          <h3 id="command-title"></h3>
+          <p id="command-summary"></p>
+          <div class="detail-grid">
+            <div><strong>輸入</strong><ul class="compact-list" id="command-inputs"></ul></div>
+            <div><strong>狀態效果</strong><p id="command-effect"></p></div>
+            <div><strong>失敗碼</strong><div class="failure-list" id="command-failures"></div></div>
+            <div><strong>主要 rule refs</strong><ul class="compact-list" id="command-rules"></ul></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="boundary-title">
+      <h2 id="boundary-title">誰負責什麼</h2>
+      <p class="section-intro">深模組邊界避免 Sales 偷偷實作 Customer 或 Pricing 規則。兩個 dependency port 都有成功、失敗、冪等與重複處理契約。</p>
+      <div class="flow" aria-label="跨 Context 流程">
+        <strong>Customer authority</strong><span class="arrow">→</span><strong>Sales Order</strong><span class="arrow">←</span><strong>Pricing Quote</strong>
+      </div>
+      <div class="boundaries">
+        <article class="boundary"><h3>Customer</h3><ul><li>Customer 是否存在</li><li>actor 是否可代表 Customer</li><li><code>CUSTOMER_NOT_FOUND</code></li><li><code>CUSTOMER_NOT_AUTHORIZED</code></li></ul><p><a href="../../contracts/customer/interactions/verify-order-authority.yaml">customer.verify-order-authority</a></p></article>
+        <article class="boundary sales"><h3>Sales</h3><ul><li>配置 Order / Item identity</li><li>保存完整 Quote snapshot</li><li>加總同幣別 Item subtotal</li><li>保護 lifecycle 與 idempotency</li></ul><p><a href="../../contracts/sales/aggregates/order.yaml">sales.order</a></p></article>
+        <article class="boundary"><h3>Pricing</h3><ul><li>fractional Quantity 與 UOM</li><li>Unit Price、計算與 rounding</li><li>回傳 authoritative subtotal</li><li>Quote identity 與 validity</li></ul><p><a href="../../contracts/pricing/interactions/quote-order-item.yaml">pricing.quote-order-item</a></p></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="scenarios-title">
+      <h2 id="scenarios-title">可觀察的驗收行為</h2>
+      <p class="section-intro">Scenario 是 AI 實作者必須轉成 executable acceptance test 的 oracle；每個情境同時檢查結果、狀態、Event count 與禁止副作用。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>情境</th><th>結果</th><th>關鍵禁止事項</th></tr></thead>
+          <tbody id="scenario-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="rules-title">
+      <h2 id="rules-title">Invariant 分組</h2>
+      <div class="rule-groups">
+        <details open><summary>Identity 與 ownership · 4</summary><ul><li>Sales 配置唯一 Order ID</li><li>Customer authority 驗證關聯</li><li>Order currency 建立後固定</li><li>每個 Item 有穩定且唯一的 Item ID</li></ul></details>
+        <details open><summary>Quoted Item 與 calculation · 6</summary><ul><li>Quantity 大於零且完全等於 Pricing 接受值</li><li>每次加入都建立 distinct Item，不自動合併</li><li>Item 保存完整 Quote snapshot</li><li>Item subtotal 以 Pricing 結果為權威</li><li>Unit Price 與 subtotal 可為零但不可為負數</li><li>Total 是同幣別 authoritative subtotals 的總和</li></ul></details>
+        <details><summary>Lifecycle · 4</summary><ul><li>submitted 必須非空</li><li>submitted Items immutable</li><li>cancelled state 與 Items immutable</li><li>Cancel Order 僅代表提交前取消</li></ul></details>
+        <details><summary>Idempotency 與 Event · 3</summary><ul><li>相同 normalized request replay 回傳原結果</li><li>不同 request 重用 ID 回傳 <code>COMMAND_ID_CONFLICT</code></li><li>第一次成功提交只產生一次 OrderSubmitted occurrence</li></ul></details>
+      </div>
+    </section>
+
+    <section aria-labelledby="agent-title">
+      <h2 id="agent-title">AI Agent 開發入口</h2>
+      <p class="section-intro">HTML 只協助理解；AI 的權威任務邊界是單一 implementation manifest。TypeScript 與 Go manifest 固定相同的 35 個 identifier-version pairs。</p>
+      <div class="agent-path">
+        <div class="agent-step"><strong>讀治理</strong><br><a href="../../AGENTS.md">AGENTS.md</a> 與 constitution</div>
+        <div class="agent-step"><strong>選 manifest</strong><br><a href="../../implementation-manifests/typescript/sales-basic.yaml">TypeScript</a> 或 <a href="../../implementation-manifests/go/sales-basic.yaml">Go</a></div>
+        <div class="agent-step"><strong>解析契約</strong><br>依 stable ID 與 exact version 取得全部 refs</div>
+        <div class="agent-step"><strong>實作與適配</strong><br>Domain module、Customer/Pricing ports、19 個 Scenario adapters</div>
+        <div class="agent-step"><strong>交付追蹤</strong><br>輸出 source、test、failure、Event、port 對照</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">Sales 2.0.0 · status: draft · 8 個 clarification 已由人類領域決策解決；仍需明確 lifecycle review 才能升級為 candidate。</footer>
+
+  <script>
+    const commands = {
+      create: {
+        id: 'sales.create-order-draft', title: '建立 Order Draft', success: 'ORDER_DRAFT_CREATED', event: 'sales.order-draft-created',
+        summary: 'Customer 先確認 actor 權限；Sales 配置 Order ID、固定 currency，建立空 Items 與零 total。',
+        inputs: ['command_id', 'actor_id', 'customer_id', 'currency'], effect: 'absent → draft；建立一個 Order。',
+        failures: ['CUSTOMER_NOT_FOUND', 'CUSTOMER_NOT_AUTHORIZED', 'COMMAND_ID_CONFLICT'],
+        rules: ['must-have-sales-allocated-unique-id', 'must-belong-to-verified-customer', 'currency-is-fixed'], nodes: ['absent', 'draft']
+      },
+      add: {
+        id: 'sales.add-order-item', title: '加入 quoted Order Item', success: 'ORDER_ITEM_ADDED', event: 'sales.order-item-added',
+        summary: 'Pricing 驗證 decimal Quantity 並回傳完整 Quote；Sales 配置 Item ID、原樣保存 snapshot，將 authoritative subtotal 加到 total。',
+        inputs: ['command_id', 'order_id', 'product_id', 'price_quote_id', 'quantity'], effect: 'draft → draft；append distinct Item，不自動合併。',
+        failures: ['ORDER_NOT_FOUND', 'INVALID_QUANTITY', 'ORDER_ALREADY_SUBMITTED', 'ORDER_CANCELLED', 'PRICE_QUOTE_NOT_FOUND', 'PRICE_QUOTE_EXPIRED', 'PRICE_QUOTE_MISMATCH', 'CURRENCY_MISMATCH', 'INVALID_PRICE_QUOTE', 'COMMAND_ID_CONFLICT'],
+        rules: ['item-quantity-must-be-positive', 'item-additions-do-not-merge', 'item-subtotal-is-pricing-authoritative', 'item-price-must-not-be-negative', 'item-retains-price-snapshot'], nodes: ['draft']
+      },
+      submit: {
+        id: 'sales.submit-order', title: '提交非空 Order Draft', success: 'ORDER_SUBMITTED', event: 'sales.order-submitted',
+        summary: '將含有至少一個 quoted Item 的 draft 送出；Items、currency 與 total 不變，第一次成功只產生一個 Event occurrence。',
+        inputs: ['command_id', 'order_id'], effect: 'draft → submitted；submitted 在本版是 Sales terminal。',
+        failures: ['ORDER_NOT_FOUND', 'ORDER_EMPTY', 'ORDER_ALREADY_SUBMITTED', 'ORDER_CANCELLED', 'COMMAND_ID_CONFLICT'],
+        rules: ['submitted-must-have-items', 'submitted-items-immutable', 'single-order-submitted-event'], nodes: ['draft', 'submitted']
+      },
+      cancel: {
+        id: 'sales.cancel-order', title: '取消 Order Draft', success: 'ORDER_CANCELLED', event: 'sales.order-cancelled',
+        summary: '只允許 draft 在提交前取消。submitted 的退款、退貨或履約補償必須由未來 Context 契約處理。',
+        inputs: ['command_id', 'order_id'], effect: 'draft → cancelled；Items 與 total 不變。',
+        failures: ['ORDER_NOT_FOUND', 'ORDER_ALREADY_CANCELLED', 'ORDER_ALREADY_SUBMITTED', 'COMMAND_ID_CONFLICT'],
+        rules: ['cancelled-is-terminal', 'cancel-before-submission-only'], nodes: ['draft', 'cancelled']
+      }
+    };
+
+    const scenarios = [
+      ['Create', 'Authorized creation', 'ORDER_DRAFT_CREATED', '不可配置第二個相同 ID'],
+      ['Create', 'Identical replay', 'ORDER_DRAFT_CREATED', '不可產生第二個 Order / Event'],
+      ['Create', 'Customer missing', 'CUSTOMER_NOT_FOUND', '不可建立 Order'],
+      ['Create', 'Actor unauthorized', 'CUSTOMER_NOT_AUTHORIZED', '不可建立 Order'],
+      ['Create', 'Command ID conflict', 'COMMAND_ID_CONFLICT', '不可覆蓋原 outcome'],
+      ['Add Item', 'Fractional Quantity 1.25 kg', 'ORDER_ITEM_ADDED', '不可合併或重算 subtotal'],
+      ['Add Item', 'Zero-priced Quote', 'ORDER_ITEM_ADDED', '不可因零價拒絕 Item'],
+      ['Add Item', 'Invalid Quantity', 'INVALID_QUANTITY', 'Items / total 不變'],
+      ['Add Item', 'Order submitted', 'ORDER_ALREADY_SUBMITTED', 'Items / total 不變'],
+      ['Add Item', 'Order cancelled', 'ORDER_CANCELLED', 'Items / total 不變'],
+      ['Add Item', 'Quote expired', 'PRICE_QUOTE_EXPIRED', 'Quote 不可成為 Item'],
+      ['Add Item', 'Currency mismatch', 'CURRENCY_MISMATCH', '不可改變 Order currency'],
+      ['Add Item', 'Negative Price Quote', 'INVALID_PRICE_QUOTE', '不可用負值表示退款或折抵'],
+      ['Submit', 'Non-empty draft', 'ORDER_SUBMITTED', 'Items / total 不變'],
+      ['Submit', 'Empty draft', 'ORDER_EMPTY', '不可改變 state'],
+      ['Submit', 'Cancelled Order', 'ORDER_CANCELLED', '不可回到 submitted'],
+      ['Submit', 'Identical replay', 'ORDER_SUBMITTED', '不可產生第二個 Event'],
+      ['Cancel', 'Draft cancellation', 'ORDER_CANCELLED', 'Items / total 不變'],
+      ['Cancel', 'Submitted Order', 'ORDER_ALREADY_SUBMITTED', '不可推測 refund / Return']
+    ];
+
+    const q = (selector) => document.querySelector(selector);
+    const qa = (selector) => [...document.querySelectorAll(selector)];
+
+    function renderCommand(key) {
+      const command = commands[key];
+      q('#command-id').textContent = command.id;
+      q('#success-code').textContent = command.success;
+      q('#event-id').textContent = command.event;
+      q('#command-title').textContent = command.title;
+      q('#command-summary').textContent = command.summary;
+      q('#command-effect').textContent = command.effect;
+      q('#command-inputs').replaceChildren(...command.inputs.map(value => {
+        const li = document.createElement('li'); const code = document.createElement('code'); code.textContent = value; li.append(code); return li;
+      }));
+      q('#command-failures').replaceChildren(...command.failures.map(value => {
+        const span = document.createElement('span'); span.className = 'failure'; span.textContent = value; return span;
+      }));
+      q('#command-rules').replaceChildren(...command.rules.map(value => {
+        const li = document.createElement('li'); const code = document.createElement('code'); code.textContent = `sales.order.${value}`; li.append(code); return li;
+      }));
+      qa('[data-select-command]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.selectCommand === key)));
+      qa('.state-diagram [data-command]').forEach(edge => edge.classList.toggle('active', edge.dataset.command === key));
+      qa('.state-diagram .node').forEach(node => node.classList.toggle('active', command.nodes.includes(node.dataset.node)));
+    }
+
+    qa('[data-select-command]').forEach(button => button.addEventListener('click', () => renderCommand(button.dataset.selectCommand)));
+
+    q('#scenario-body').replaceChildren(...scenarios.map(([command, scenario, result, forbidden]) => {
+      const tr = document.createElement('tr');
+      [command, scenario].forEach(value => { const td = document.createElement('td'); td.textContent = value; tr.append(td); });
+      const resultCell = document.createElement('td'); const resultCode = document.createElement('code'); resultCode.textContent = result; resultCell.append(resultCode); tr.append(resultCell);
+      const forbiddenCell = document.createElement('td'); forbiddenCell.textContent = forbidden; tr.append(forbiddenCell);
+      return tr;
+    }));
+
+    renderCommand('create');
+  </script>
+</body>
+</html>

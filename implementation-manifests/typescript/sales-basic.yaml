@@ -1,0 +1,130 @@
+schema_version: "1.0"
+kind: implementation-manifest
+id: implementation.typescript.sales-basic
+version: "2.0.0"
+status: draft
+task_id: SALES-BASIC-TS-002
+
+objective: Produce a TypeScript Sales domain implementation that conforms only to the pinned Sales 2.0.0 draft contracts and treats Customer and Pricing as explicit dependency ports.
+
+implementation_target:
+  language: typescript
+  architecture_profile: modular-monolith
+
+contract_revisions:
+  - contract_ref: customer
+    version: "1.0.0"
+  - contract_ref: customer.verify-order-authority
+    version: "1.0.0"
+  - contract_ref: pricing
+    version: "1.0.0"
+  - contract_ref: pricing.quote-order-item
+    version: "1.0.0"
+  - contract_ref: sales
+    version: "2.0.0"
+  - contract_ref: sales.vocabulary
+    version: "2.0.0"
+  - contract_ref: sales.order
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item
+    version: "2.0.0"
+  - contract_ref: sales.submit-order
+    version: "2.0.0"
+  - contract_ref: sales.cancel-order
+    version: "2.0.0"
+  - contract_ref: sales.order-draft-created
+    version: "2.0.0"
+  - contract_ref: sales.order-item-added
+    version: "2.0.0"
+  - contract_ref: sales.order-submitted
+    version: "2.0.0"
+  - contract_ref: sales.order-cancelled
+    version: "2.0.0"
+  - contract_ref: sales.order-lifecycle
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft.success
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft.idempotent
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft.reject-customer-not-found
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft.reject-unauthorized-customer
+    version: "2.0.0"
+  - contract_ref: sales.create-order-draft.reject-command-id-conflict
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.success
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.free-item-success
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-invalid-quantity
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-after-submit
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-after-cancel
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-expired-price-quote
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-currency-mismatch
+    version: "2.0.0"
+  - contract_ref: sales.add-order-item.reject-negative-price-quote
+    version: "2.0.0"
+  - contract_ref: sales.submit-order.success
+    version: "2.0.0"
+  - contract_ref: sales.submit-order.reject-empty
+    version: "2.0.0"
+  - contract_ref: sales.submit-order.reject-cancelled-resubmission
+    version: "2.0.0"
+  - contract_ref: sales.submit-order.idempotent
+    version: "2.0.0"
+  - contract_ref: sales.cancel-order.cancel-draft
+    version: "2.0.0"
+  - contract_ref: sales.cancel-order.reject-after-submit
+    version: "2.0.0"
+
+required_deliverables:
+  - A TypeScript Sales domain module conforming to every pinned contract.
+  - Customer authority and Pricing Quote ports with deterministic conformance fixtures.
+  - A deterministic Sales identity allocation seam for Order and Order Item IDs, injectable by conformance fixtures.
+  - Automated executable adapters for every pinned Scenario.
+  - A conformance report containing the required traceability output.
+
+architecture_constraints:
+  - The implementation MUST use a modular-monolith profile.
+  - Business behavior MUST remain independent of transport, persistence, and deployment choices.
+  - Customer and Pricing MUST be represented as dependency ports; the Sales module MUST NOT implement their internal policies.
+  - Base-10 Quantity values MUST NOT be represented with binary floating-point arithmetic.
+  - Money values MUST be carried and summed as integer minor units in the Order's fixed Currency Code, and MUST NOT be represented as binary floating-point values.
+  - Sales MUST preserve Pricing's authoritative Item subtotal and MUST NOT repeat its rounding.
+  - Contract failure codes MUST remain stable at the domain boundary.
+
+completion_conditions:
+  - Every pinned Scenario passes without weakening its outcome, state, event-count, event-payload, or forbidden-side-effect assertions.
+  - Every invariant maps to at least one passing executable acceptance test.
+  - Every produced Event maps to its pinned producing Command.
+  - The implementation contains no business rule absent from the pinned contract revisions.
+
+ambiguity_policy:
+  on_undefined: stop_and_request_clarification
+  on_conflict: stop_and_request_clarification
+  clarification_location: clarifications/
+
+traceability_output:
+  required: true
+  format: machine-readable-yaml
+  maps:
+    - source artifact to contract revision
+    - executable test to scenario_ref
+    - invariant to executable acceptance test
+    - failure path to Command failure code
+    - produced Event to producer Command
+    - dependency port behavior to interaction contract
+
+forbidden_behavior:
+  - The implementation MUST NOT amend, override, or reinterpret a business contract.
+  - The implementation MUST NOT calculate live prices, permitted Quantity precision, or Item-subtotal rounding inside Sales.
+  - The implementation MUST NOT treat submitted Order cancellation as refund or Return behavior.
+  - The implementation MUST NOT add tax, discount, inventory, payment, refund, return, shipment, invoice, or credit behavior.
+  - The implementation MUST NOT report completion while any pinned Scenario is skipped or weakened.
+  - The implementation MUST NOT add implementation, test, or build artifacts to the specification repository.

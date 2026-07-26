@@ -1,0 +1,56 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.create-order-draft.idempotent
+version: "2.0.0"
+status: draft
+summary: Replaying Create Order Draft returns the originally allocated Order ID without another Order or Event occurrence.
+
+contract_refs:
+  - sales.create-order-draft
+  - sales.order.command-id-idempotency
+  - sales.order-draft-created
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: events.sales.order-draft-created.for_order.order-1001
+      operator: count_equals
+      value: 1
+  prior_command:
+    command_ref: sales.create-order-draft
+    command_id: command-create-001
+    outcome_code: ORDER_DRAFT_CREATED
+
+when:
+  command_ref: sales.create-order-draft
+  input:
+    command_id: command-create-001
+    actor_id: actor-1001
+    customer_id: customer-1001
+    currency: USD
+
+then:
+  outcome:
+    status: success
+    code: ORDER_DRAFT_CREATED
+    same_as_first: true
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: draft
+      - path: orders.with_customer.customer-1001
+        operator: count_equals
+        value: 1
+  events:
+    assertions:
+      - event_ref: sales.order-draft-created
+        count: 1
+  forbidden:
+    - kind: side_effect
+      description: Replay MUST NOT allocate another Order ID or create another Order.
+    - kind: event
+      event_ref: sales.order-draft-created
+      description: A second OrderDraftCreated business occurrence MUST NOT be created.

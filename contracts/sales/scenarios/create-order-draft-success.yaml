@@ -1,0 +1,70 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.create-order-draft.success
+version: "2.0.0"
+status: draft
+summary: An authorized actor creates one USD Order Draft with Sales-allocated identity and zero total.
+
+contract_refs:
+  - sales.create-order-draft
+  - sales.order.must-have-sales-allocated-unique-id
+  - sales.order.must-belong-to-verified-customer
+  - sales.order.currency-is-fixed
+  - customer.verify-order-authority
+  - sales.order-draft-created
+
+given:
+  facts:
+    - path: customer.authority.actor-1001.customer-1001
+      operator: equals
+      value: authorized
+    - path: sales.next-allocated-order-id
+      operator: equals
+      value: order-1001
+    - path: orders.with_id.order-1001
+      operator: count_equals
+      value: 0
+
+when:
+  command_ref: sales.create-order-draft
+  input:
+    command_id: command-create-001
+    actor_id: actor-1001
+    customer_id: customer-1001
+    currency: USD
+
+then:
+  outcome:
+    status: success
+    code: ORDER_DRAFT_CREATED
+  state:
+    assertions:
+      - path: orders.order-1001.customer_id
+        operator: equals
+        value: customer-1001
+      - path: orders.order-1001.currency
+        operator: equals
+        value: USD
+      - path: orders.order-1001.state
+        operator: equals
+        value: draft
+      - path: orders.order-1001.items
+        operator: count_equals
+        value: 0
+      - path: orders.order-1001.total.amount_minor
+        operator: equals
+        value: 0
+  events:
+    assertions:
+      - event_ref: sales.order-draft-created
+        count: 1
+        payload:
+          order_id: order-1001
+          customer_id: customer-1001
+          currency: USD
+  forbidden:
+    - kind: side_effect
+      description: A second Order with the allocated Order ID MUST NOT be created.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

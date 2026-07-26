@@ -1,0 +1,29 @@
+schema_version: "1.0"
+kind: interaction
+id: customer.verify-order-authority
+version: "1.0.0"
+status: draft
+producer_context_ref: customer
+consumer_context_ref: sales
+purpose: Customer MUST provide Sales with an authoritative decision that the Customer exists and the actor may create an Order for that Customer.
+trigger_ref: sales.create-order-draft
+
+success:
+  outcome: Customer MUST confirm both Customer existence and actor authority for the exact actor_id and customer_id.
+
+failures:
+  - code: CUSTOMER_NOT_FOUND
+    outcome: Customer MUST report that customer_id does not identify an existing Customer.
+  - code: CUSTOMER_NOT_AUTHORIZED
+    outcome: Customer MUST report that actor_id may not create an Order for customer_id.
+
+idempotency:
+  key: actor_id plus customer_id
+  duplicate_side_effects: prohibited
+
+duplicate_handling:
+  detection_key: same actor_id plus customer_id verification request
+  outcome: Repeated verification MUST return an authoritative current decision without creating a Sales side effect.
+
+unspecified_behavior:
+  policy: prohibited_to_assume

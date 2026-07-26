@@ -1,0 +1,70 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-currency-mismatch
+version: "2.0.0"
+status: draft
+summary: A Price Quote in another currency cannot be added to an Order with fixed currency.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.currency-is-fixed
+  - sales.order.total-equals-quoted-item-subtotals
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.currency
+      operator: equals
+      value: USD
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+    - path: pricing.quotes.quote-eur.currency
+      operator: equals
+      value: EUR
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-eur-001
+    order_id: order-1001
+    product_id: product-1001
+    price_quote_id: quote-eur
+    quantity: "0.5"
+
+then:
+  outcome:
+    status: failure
+    code: CURRENCY_MISMATCH
+  state:
+    assertions:
+      - path: orders.order-1001.currency
+        operator: equals
+        value: USD
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Cross-currency Item MUST NOT be added.
+    - kind: state_change
+      path: orders.order-1001.currency
+      description: Order currency MUST NOT change to match the Quote.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

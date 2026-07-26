@@ -1,0 +1,28 @@
+schema_version: "1.0"
+kind: context
+id: pricing
+version: "1.0.0"
+status: draft
+
+summary: Pricing MUST be the authority for Product quotation, Quantity validity, Unit of Measure, currency, monetary calculation, and Item-subtotal rounding supplied to Sales.
+
+responsibilities:
+  includes:
+    - Pricing MUST validate the Product, exact decimal Quantity, and permitted Unit of Measure.
+    - Pricing MUST determine Unit Price, Currency Code, Item subtotal, validity, and any required rounding.
+    - Pricing MUST permit zero-priced Items and MUST reject negative Unit Price or Item subtotal values.
+    - Pricing MUST identify each Price Quote with a stable Price Quote ID.
+  excludes:
+    - Pricing MUST NOT create or modify Sales Orders.
+    - Pricing MUST NOT add tax, payment, refund, shipment, or Return behavior to Sales.
+    - Pricing MUST NOT encode a discount, refund, Return, or credit as a negative Order Item value.
+
+owned_aggregates: []
+commands: []
+events: []
+state_machines: []
+interactions:
+  - pricing.quote-order-item
+
+explanatory_notes:
+  - This dependency boundary does not prescribe Pricing's internal model, price source, or delivery technology.

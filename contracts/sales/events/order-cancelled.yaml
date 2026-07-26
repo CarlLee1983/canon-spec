@@ -1,0 +1,28 @@
+schema_version: "1.0"
+kind: event
+id: sales.order-cancelled
+version: "2.0.0"
+status: draft
+name: OrderCancelled
+
+meaning: OrderCancelled MUST mean that Sales moved one Order Draft to cancelled before submission; it MUST NOT mean refunded or returned.
+
+producer:
+  context: sales
+  command_ref: sales.cancel-order
+
+payload:
+  event_id:
+    type: EventId
+  occurred_at:
+    type: Timestamp
+  command_id:
+    type: CommandId
+  order_id:
+    type: OrderId
+  customer_id:
+    type: CustomerId
+
+delivery_semantics:
+  duplicates_possible: true
+  consumer_must_be_idempotent: true

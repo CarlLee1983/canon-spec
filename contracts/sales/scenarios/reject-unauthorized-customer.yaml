@@ -1,0 +1,52 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.create-order-draft.reject-unauthorized-customer
+version: "2.0.0"
+status: draft
+summary: An actor without Customer authority cannot create an Order for that Customer.
+
+contract_refs:
+  - sales.create-order-draft
+  - customer.verify-order-authority
+  - sales.order.must-belong-to-verified-customer
+  - sales.order-draft-created
+
+given:
+  facts:
+    - path: customer.customers.customer-1001
+      operator: exists
+      value: true
+    - path: customer.authority.actor-9999.customer-1001
+      operator: equals
+      value: unauthorized
+    - path: orders
+      operator: count_equals
+      value: 0
+
+when:
+  command_ref: sales.create-order-draft
+  input:
+    command_id: command-create-unauthorized-001
+    actor_id: actor-9999
+    customer_id: customer-1001
+    currency: USD
+
+then:
+  outcome:
+    status: failure
+    code: CUSTOMER_NOT_AUTHORIZED
+  state:
+    assertions:
+      - path: orders
+        operator: count_equals
+        value: 0
+  events:
+    assertions:
+      - event_ref: sales.order-draft-created
+        count: 0
+  forbidden:
+    - kind: side_effect
+      description: Sales MUST NOT allocate an Order ID or create an Order.
+    - kind: event
+      event_ref: sales.order-draft-created
+      description: OrderDraftCreated MUST NOT occur.

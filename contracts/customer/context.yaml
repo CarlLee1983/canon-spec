@@ -1,0 +1,25 @@
+schema_version: "1.0"
+kind: context
+id: customer
+version: "1.0.0"
+status: draft
+
+summary: Customer MUST be the authority for Customer existence and whether an actor may act for a Customer when Sales creates an Order.
+
+responsibilities:
+  includes:
+    - Customer MUST decide whether a Customer exists.
+    - Customer MUST decide whether an actor may create an Order for that Customer.
+  excludes:
+    - Customer MUST NOT create or modify Sales Orders.
+    - Customer MUST NOT determine Product prices.
+
+owned_aggregates: []
+commands: []
+events: []
+state_machines: []
+interactions:
+  - customer.verify-order-authority
+
+explanatory_notes:
+  - This dependency boundary does not prescribe Customer's internal model or delivery technology.

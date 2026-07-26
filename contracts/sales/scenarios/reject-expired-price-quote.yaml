@@ -1,0 +1,63 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-expired-price-quote
+version: "2.0.0"
+status: draft
+summary: An expired Pricing Quote cannot become an Order Item or change the total.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.item-retains-price-snapshot
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-command
+    - path: orders.order-1001.total
+      operator: equals
+      value: total-before-command
+    - path: pricing.quotes.quote-expired.validity
+      operator: equals
+      value: expired
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-expired-001
+    order_id: order-1001
+    product_id: product-1001
+    price_quote_id: quote-expired
+    quantity: "1.25"
+
+then:
+  outcome:
+    status: failure
+    code: PRICE_QUOTE_EXPIRED
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-command
+      - path: orders.order-1001.total
+        operator: equals
+        value: total-before-command
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: An expired Quote MUST NOT become an Order Item.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: Order total MUST NOT change.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

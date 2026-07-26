@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canon-spec.local/schemas/vocabulary.schema.json",
+  "title": "Ubiquitous Language Contract",
+  "type": "object",
+  "required": ["schema_version", "kind", "id", "version", "status", "context_ref", "terms"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "vocabulary" },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "$ref": "#/$defs/version" },
+    "status": { "$ref": "#/$defs/status" },
+    "context_ref": { "$ref": "#/$defs/id" },
+    "terms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["term", "definition", "not_equivalent_to", "notes"],
+        "properties": {
+          "term": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+          },
+          "display_name": { "type": "string", "minLength": 1 },
+          "definition": { "type": "string", "minLength": 1 },
+          "not_equivalent_to": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+            },
+            "uniqueItems": true
+          },
+          "notes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "explanatory_notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "status": {
+      "enum": ["draft", "candidate", "accepted", "deprecated", "retired"]
+    }
+  }
+}

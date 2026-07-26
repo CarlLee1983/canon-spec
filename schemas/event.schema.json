@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canon-spec.local/schemas/event.schema.json",
+  "title": "Domain Event Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "kind",
+    "id",
+    "version",
+    "status",
+    "name",
+    "meaning",
+    "producer",
+    "payload",
+    "delivery_semantics"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "kind": { "const": "event" },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "$ref": "#/$defs/version" },
+    "status": { "$ref": "#/$defs/status" },
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*ed$"
+    },
+    "meaning": { "type": "string", "minLength": 1 },
+    "producer": {
+      "type": "object",
+      "required": ["context", "command_ref"],
+      "properties": {
+        "context": { "$ref": "#/$defs/id" },
+        "command_ref": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "required": ["event_id", "occurred_at"],
+      "minProperties": 3,
+      "additionalProperties": { "$ref": "#/$defs/field" }
+    },
+    "delivery_semantics": {
+      "type": "object",
+      "required": ["duplicates_possible", "consumer_must_be_idempotent"],
+      "properties": {
+        "duplicates_possible": { "type": "boolean" },
+        "consumer_must_be_idempotent": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "status": {
+      "enum": ["draft", "candidate", "accepted", "deprecated", "retired"]
+    },
+    "field": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

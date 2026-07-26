@@ -1,0 +1,25 @@
+[project]
+name = "canon-spec-tooling"
+version = "0.1.0"
+description = "Validation tooling for implementation-neutral business contracts"
+requires-python = ">=3.11"
+dependencies = [
+  "jsonschema>=4.23,<5",
+  "PyYAML>=6,<7",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=9,<10",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+# The linter is a standalone module; conftest.py injects this path at runtime.
+extraPaths = ["tools/contract-lint", "tests"]
+

@@ -1,0 +1,30 @@
+schema_version: "1.0"
+kind: event
+id: sales.order-draft-created
+version: "2.0.0"
+status: draft
+name: OrderDraftCreated
+
+meaning: OrderDraftCreated MUST mean that Sales verified Customer authority and created one Order Draft with a Sales-allocated identity and fixed currency.
+
+producer:
+  context: sales
+  command_ref: sales.create-order-draft
+
+payload:
+  event_id:
+    type: EventId
+  occurred_at:
+    type: Timestamp
+  command_id:
+    type: CommandId
+  order_id:
+    type: OrderId
+  customer_id:
+    type: CustomerId
+  currency:
+    type: CurrencyCode
+
+delivery_semantics:
+  duplicates_possible: true
+  consumer_must_be_idempotent: true

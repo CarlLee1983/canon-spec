@@ -1,0 +1,73 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.submit-order.success
+version: "2.0.0"
+status: draft
+summary: A non-empty Order Draft is submitted once without changing its quoted Items, currency, or total.
+
+contract_refs:
+  - sales.submit-order
+  - sales.order.submitted-must-have-items
+  - sales.order.single-order-submitted-event
+  - sales.order-submitted
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: count_equals
+      value: 1
+    - path: orders.order-1001.items
+      operator: equals
+      value: items-before-submit
+    - path: orders.order-1001.currency
+      operator: equals
+      value: USD
+    - path: orders.order-1001.total.amount_minor
+      operator: equals
+      value: 922
+
+when:
+  command_ref: sales.submit-order
+  input:
+    command_id: command-submit-001
+    order_id: order-1001
+
+then:
+  outcome:
+    status: success
+    code: ORDER_SUBMITTED
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: submitted
+      - path: orders.order-1001.items
+        operator: equals
+        value: items-before-submit
+      - path: orders.order-1001.currency
+        operator: equals
+        value: USD
+      - path: orders.order-1001.total.amount_minor
+        operator: equals
+        value: 922
+  events:
+    assertions:
+      - event_ref: sales.order-submitted
+        count: 1
+        payload:
+          order_id: order-1001
+          currency: USD
+          order_total_amount_minor: 922
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.items
+      description: Order Items MUST NOT change during submission.
+    - kind: state_change
+      path: orders.order-1001.total
+      description: Order total MUST NOT change during submission.
+    - kind: event
+      event_ref: sales.order-cancelled
+      description: OrderCancelled MUST NOT occur.

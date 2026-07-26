@@ -1,0 +1,46 @@
+schema_version: "1.0"
+kind: event
+id: sales.order-item-added
+version: "2.0.0"
+status: draft
+name: OrderItemAdded
+
+meaning: OrderItemAdded MUST mean that Sales appended one distinct Order Item using one authoritative Pricing Quote.
+
+producer:
+  context: sales
+  command_ref: sales.add-order-item
+
+payload:
+  event_id:
+    type: EventId
+  occurred_at:
+    type: Timestamp
+  command_id:
+    type: CommandId
+  order_id:
+    type: OrderId
+  order_item_id:
+    type: OrderItemId
+  customer_id:
+    type: CustomerId
+  product_id:
+    type: ProductId
+  price_quote_id:
+    type: PriceQuoteId
+  quantity:
+    type: DecimalQuantity
+  unit_of_measure:
+    type: UnitOfMeasure
+  unit_price:
+    type: DecimalUnitPrice
+  currency:
+    type: CurrencyCode
+  item_subtotal:
+    type: MoneySnapshot
+  order_total:
+    type: MoneySnapshot
+
+delivery_semantics:
+  duplicates_possible: true
+  consumer_must_be_idempotent: true
