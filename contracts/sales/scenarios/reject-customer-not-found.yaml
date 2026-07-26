@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.create-order-draft.reject-customer-not-found
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: Customer rejection for a missing Customer prevents Order creation and Event production.
 
 contract_refs:

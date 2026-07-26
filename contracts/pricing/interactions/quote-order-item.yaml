@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: interaction
 id: pricing.quote-order-item
 version: "2.0.0"
-status: candidate
+status: accepted
 producer_context_ref: pricing
 consumer_context_ref: sales
 purpose: Pricing MUST resolve one Price Quote for an exact Product and decimal Quantity and return all evidence Sales must preserve without repeating Pricing arithmetic.

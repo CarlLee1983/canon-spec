@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: command
 id: sales.create-order-draft
 version: "3.0.1"
-status: candidate
+status: accepted
 
 summary: Create Order Draft MUST verify Customer authority and create one draft Order with a Sales-allocated identity and fixed currency.
 

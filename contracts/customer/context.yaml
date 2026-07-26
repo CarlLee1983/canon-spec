@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: context
 id: customer
 version: "2.0.0"
-status: candidate
+status: accepted
 
 summary: Customer MUST be the authority for Customer existence and whether an actor may act for a Customer when Sales creates an Order.
 

@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: event
 id: sales.order-item-added
 version: "3.0.1"
-status: candidate
+status: accepted
 name: OrderItemAdded
 
 meaning: OrderItemAdded MUST mean that Sales appended one distinct Order Item using one authoritative Pricing Quote.

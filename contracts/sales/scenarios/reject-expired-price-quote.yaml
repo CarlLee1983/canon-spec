@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-expired-price-quote
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: An expired Pricing Quote cannot become an Order Item or change the total.
 
 contract_refs:

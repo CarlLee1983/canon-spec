@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.free-item-success
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: A valid zero-priced Quote appends a distinct Item while leaving the Order total unchanged.
 
 contract_refs:

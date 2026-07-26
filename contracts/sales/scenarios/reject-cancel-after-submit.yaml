@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.cancel-order.reject-after-submit
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: Cancel Order cannot convert a submitted Order into cancelled because refund and Return require separate contracts.
 
 contract_refs:

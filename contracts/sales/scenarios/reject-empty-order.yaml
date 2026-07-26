@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.submit-order.reject-empty
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: An empty Order Draft is rejected without state, total, or Event changes.
 
 contract_refs:

@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-negative-price-quote
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: Pricing rejects a negative Item value so Sales cannot model a discount, refund, Return, or credit as an Order Item.
 
 contract_refs:

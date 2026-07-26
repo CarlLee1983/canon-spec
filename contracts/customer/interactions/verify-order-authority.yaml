@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: interaction
 id: customer.verify-order-authority
 version: "2.0.0"
-status: candidate
+status: accepted
 producer_context_ref: customer
 consumer_context_ref: sales
 purpose: Customer MUST provide Sales with an authoritative decision that the Customer exists and the actor may create an Order for that Customer.

@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-price-quote-unavailable
 version: "3.0.1"
-status: candidate
+status: accepted
 summary: Unavailable Pricing evidence prevents an Item addition and MUST NOT be reported as a missing, expired, or invalid Price Quote.
 
 contract_refs:
