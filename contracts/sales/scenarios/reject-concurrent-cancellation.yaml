@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.cancel-order.reject-concurrent-modification
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 summary: A Cancel Order Command that loses a concurrent race leaves the Order Draft unchanged and creates no OrderCancelled occurrence.
 

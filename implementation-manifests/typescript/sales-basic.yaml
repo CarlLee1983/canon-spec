@@ -1,11 +1,11 @@
 schema_version: "1.0"
 kind: implementation-manifest
 id: implementation.typescript.sales-basic
-version: "3.0.0"
+version: "3.0.1"
 status: draft
 task_id: SALES-BASIC-TS-003
 
-objective: Produce a TypeScript Sales domain implementation that conforms only to the pinned Sales 3.0.0 candidate contracts and treats Customer and Pricing as explicit dependency ports.
+objective: Produce a TypeScript Sales domain implementation that conforms only to the pinned Sales 3.0.1 candidate contracts and treats Customer and Pricing as explicit dependency ports.
 
 implementation_target:
   language: typescript
@@ -21,77 +21,77 @@ contract_revisions:
   - contract_ref: pricing.quote-order-item
     version: "2.0.0"
   - contract_ref: sales
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.vocabulary
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.cancel-order
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order-draft-created
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order-item-added
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order-submitted
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order-cancelled
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.order-lifecycle
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.success
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.idempotent
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.reject-customer-not-found
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.reject-unauthorized-customer
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.reject-command-id-conflict
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.success
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.free-item-success
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-invalid-quantity
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-after-submit
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-after-cancel
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-expired-price-quote
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-currency-mismatch
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-negative-price-quote
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order.success
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order.reject-empty
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order.reject-cancelled-resubmission
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order.idempotent
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.cancel-order.cancel-draft
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.cancel-order.reject-after-submit
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-concurrent-modification
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.add-order-item.reject-price-quote-unavailable
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.cancel-order.reject-concurrent-modification
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.create-order-draft.reject-customer-authority-unavailable
-    version: "3.0.0"
+    version: "3.0.1"
   - contract_ref: sales.submit-order.reject-concurrent-modification
-    version: "3.0.0"
+    version: "3.0.1"
 
 required_deliverables:
   - A TypeScript Sales domain module conforming to every pinned contract.

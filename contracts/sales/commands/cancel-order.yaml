@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: command
 id: sales.cancel-order
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 
 summary: Cancel Order MUST move only an Order Draft to cancelled and MUST NOT represent a refund, Return, or post-submission reversal.

@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: vocabulary
 id: sales.vocabulary
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 context_ref: sales
 
@@ -145,6 +145,7 @@ terms:
       - correlation_id
     notes:
       - "EXPLANATORY: The same ID with another Command or input is a COMMAND_ID_CONFLICT."
+      - "EXPLANATORY: A reservation never expires, so age alone never turns a reuse back into an acceptable new Command."
 
   - term: domain_event
     display_name: Domain Event

@@ -1,6 +1,6 @@
 ---
 id: clr-0010-command-id-retention
-status: open
+status: resolved
 blocks_candidate: false
 affected_refs:
   - sales.order.command-id-idempotency
@@ -29,3 +29,11 @@ This request is marked non-blocking because the strictest reading — reservatio
 1. Reservation is unbounded. Every Command ID ever accepted stays reserved for the lifetime of the Sales Context, and every conforming implementation retains that history without limit.
 2. Reservation has a defined business lifetime stated in the contract. After it lapses the identifier is free, and reuse is treated as a new Command rather than a conflict.
 3. Reservation lifetime is deliberately outside the business contract. The rules describe only the reserved window, and its extent is left to each deployment, accepting that two conforming implementations may answer the same reuse differently.
+
+## Resolution
+
+Human domain review selected interpretation 1. A Command ID reservation is unbounded, and `sales.order.command-id-conflict` now states that the reservation of an accepted Command ID MUST NOT lapse with the passage of time.
+
+This encodes the behavior the earlier rules already implied rather than changing it, so no Scenario outcome changes. Its cost is explicit instead of hidden: every conforming implementation carries the accepted Command ID history without a time bound, and age alone never turns a reuse back into an acceptable new Command.
+
+See [DEC-0007](../decisions/DEC-0007-command-id-reservation.md).

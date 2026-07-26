@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.submit-order.success
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 summary: A non-empty Order Draft is submitted once without changing its quoted Items, currency, or total.
 

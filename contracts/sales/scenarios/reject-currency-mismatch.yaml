@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-currency-mismatch
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 summary: A Price Quote in another currency cannot be added to an Order with fixed currency.
 

@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: context
 id: sales
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 
 summary: Sales MUST own the Order lifecycle and preserve Customer and Pricing evidence without assuming behavior owned by other Contexts.
@@ -23,6 +23,7 @@ responsibilities:
     - Sales MUST NOT own physical inventory.
     - Sales MUST NOT execute payment, refund, return, shipment, or fulfillment behavior.
     - Sales MUST NOT issue invoices or define discount campaigns.
+    - Sales MUST NOT remove an Order Item from an Order or change the Quantity of an existing Order Item in this revision.
 
 owned_aggregates:
   - sales.order
@@ -49,3 +50,4 @@ interactions:
 explanatory_notes:
   - A submitted Order is not cancelled by this Context. Refund and Return require future contracts with Payment, Fulfillment, Shipment, or Returns.
   - Customer and Pricing are dependency boundaries only; their internal implementations are outside the Sales conformance target.
+  - Correcting a mistaken Order Item means cancelling the Order Draft and creating a new one. The absence of a removal Command is a scope decision recorded in clr-0012-order-item-removal, not an oversight.

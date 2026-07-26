@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: aggregate
 id: sales.order
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 context_ref: sales
 
@@ -105,8 +105,9 @@ invariants:
     category: idempotency
 
   - id: sales.order.command-id-conflict
-    statement: Reusing a Sales-wide Command ID for a different Command or different normalized input MUST fail with COMMAND_ID_CONFLICT and MUST NOT create state changes or Domain Event occurrences.
+    statement: Reusing a Sales-wide Command ID for a different Command or different normalized input MUST fail with COMMAND_ID_CONFLICT and MUST NOT create state changes or Domain Event occurrences, and the reservation of an accepted Command ID MUST NOT lapse with the passage of time.
     category: idempotency
+    clarification_ref: clr-0010-command-id-retention
 
   - id: sales.order.concurrent-commands-do-not-interleave
     statement: When two or more Commands would each change the same Order without a defined order between them, at most one MUST take effect, and every other MUST fail with ORDER_CONCURRENT_MODIFICATION and MUST NOT create state changes or Domain Event occurrences.

@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-invalid-quantity
-version: "3.0.0"
+version: "3.0.1"
 status: candidate
 summary: Pricing rejects a non-positive or unsupported decimal Quantity without Sales state or Event side effects.
 

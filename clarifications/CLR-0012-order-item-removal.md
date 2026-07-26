@@ -1,6 +1,6 @@
 ---
 id: clr-0012-order-item-removal
-status: open
+status: resolved
 blocks_candidate: false
 affected_refs:
   - sales
@@ -28,3 +28,11 @@ This request is marked non-blocking. Every pinned Scenario passes without an ans
 1. Removal and modification are out of scope for this revision, and the Sales Context should record the exclusion alongside its existing ones so the boundary is explicit.
 2. Removal belongs in the conformance target and needs its own Command, with the resulting Order total, Item identity, and lifecycle effects defined.
 3. Correction is already fully expressed. Cancelling the Order Draft and creating a new one is the intended business behavior, and the vocabulary should say so rather than leaving readers to infer it.
+
+## Resolution
+
+Human domain review selected interpretation 1, together with the disclosure that interpretation 3 asked for. Item removal and Quantity modification are out of scope for this revision.
+
+`contracts/sales/context.yaml` now excludes both explicitly and records that correcting a mistaken Item means cancelling the Order Draft and creating a new one. The omission is therefore a scope decision a later reader can see, rather than a gap they might close by accident. No Scenario outcome changes.
+
+This resolution carries no Decision Record. The exclusion entry and its explanatory note are the record; restating the same rationale in a second document would duplicate it.
