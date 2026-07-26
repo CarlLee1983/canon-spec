@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.create-order-draft.reject-command-id-conflict
 version: "3.0.0"
-status: draft
+status: candidate
 summary: Reusing a Sales-wide Command ID with different normalized input fails without state or Event effects.
 
 contract_refs:

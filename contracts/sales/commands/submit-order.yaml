@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: command
 id: sales.submit-order
 version: "3.0.0"
-status: draft
+status: candidate
 
 summary: Submit Order MUST move one eligible non-empty Order Draft to submitted and create one OrderSubmitted business occurrence.
 

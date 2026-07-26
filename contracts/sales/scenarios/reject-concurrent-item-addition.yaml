@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-concurrent-modification
 version: "3.0.0"
-status: draft
+status: candidate
 summary: A losing concurrent Item addition fails visibly and MUST NOT silently drop its subtotal from the Order total.
 
 contract_refs:

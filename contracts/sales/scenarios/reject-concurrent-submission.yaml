@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: scenario
 id: sales.submit-order.reject-concurrent-modification
 version: "3.0.0"
-status: draft
+status: candidate
 summary: A Submit Order Command that loses a concurrent race leaves the Order unchanged and creates no OrderSubmitted occurrence.
 
 contract_refs:

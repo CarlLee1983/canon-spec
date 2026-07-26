@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: event
 id: sales.order-draft-created
 version: "3.0.0"
-status: draft
+status: candidate
 name: OrderDraftCreated
 
 meaning: OrderDraftCreated MUST mean that Sales verified Customer authority and created one Order Draft with a Sales-allocated identity and fixed currency.

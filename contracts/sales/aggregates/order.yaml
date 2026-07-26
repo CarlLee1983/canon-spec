@@ -2,7 +2,7 @@ schema_version: "1.0"
 kind: aggregate
 id: sales.order
 version: "3.0.0"
-status: draft
+status: candidate
 context_ref: sales
 
 summary: Order MUST be the Sales consistency boundary for allocated identity, verified Customer association, quoted Items, one currency, quoted totals, lifecycle, and Command idempotency.

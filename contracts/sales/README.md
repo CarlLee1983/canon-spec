@@ -1,6 +1,6 @@
 # Sales Contract Index
 
-Status: draft  
+Status: candidate  
 Revision: 3.0.0
 
 Sales owns the lifecycle and invariants of the Order Aggregate described by [context.yaml](context.yaml). This directory contains specifications only and has no production Sales implementation.
@@ -66,6 +66,6 @@ Sales owns the lifecycle and invariants of the Order Aggregate described by [con
 - A dependency that returns no decision is a distinct Command outcome, never a negative decision ([DEC-0005](../../decisions/DEC-0005-dependency-unavailability.md)).
 - Concurrent Commands against one Order resolve to at most one effect; the others fail visibly and leave nothing behind ([DEC-0006](../../decisions/DEC-0006-concurrent-order-commands.md)).
 
-Ten Clarification Requests were resolved by human domain decisions for this revision. CLR-0010 and CLR-0012 remain open and non-blocking. The contracts remain `draft` until a human lifecycle review authorizes promotion to `candidate`.
+Ten Clarification Requests were resolved by human domain decisions for this revision. CLR-0010 and CLR-0012 remain open and non-blocking. Human domain review authorized promotion to `candidate`; only an authorized human domain reviewer may later mark these contracts `accepted`.
 
 For a non-normative human-readable view, open the [Traditional Chinese Order business logic guide](../../docs/zh-TW/order-business-logic.html). AI agents and implementations MUST continue to use the YAML contracts and one exact implementation manifest as their source.
