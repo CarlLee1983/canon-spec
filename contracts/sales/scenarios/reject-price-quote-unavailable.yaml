@@ -1,0 +1,62 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-price-quote-unavailable
+version: "3.0.0"
+status: draft
+summary: Unavailable Pricing evidence prevents an Item addition and MUST NOT be reported as a missing, expired, or invalid Price Quote.
+
+contract_refs:
+  - sales.add-order-item
+  - pricing.quote-order-item
+  - sales.order.item-subtotal-is-pricing-authoritative
+  - sales.order.total-equals-quoted-item-subtotals
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: count_equals
+      value: 1
+    - path: orders.order-1001.total.amount_minor
+      operator: equals
+      value: 500
+    - path: pricing.quote-order-item.availability
+      operator: equals
+      value: no-authoritative-evidence
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-unavailable-001
+    order_id: order-1001
+    product_id: product-1002
+    price_quote_id: quote-2002
+    quantity: "1"
+
+then:
+  outcome:
+    status: failure
+    code: PRICE_QUOTE_UNAVAILABLE
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: count_equals
+        value: 1
+      - path: orders.order-1001.total.amount_minor
+        operator: equals
+        value: 500
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: side_effect
+      description: Sales MUST NOT report PRICE_QUOTE_NOT_FOUND, PRICE_QUOTE_EXPIRED, or INVALID_PRICE_QUOTE when Pricing returned no evidence at all.
+    - kind: side_effect
+      description: Sales MUST NOT substitute a remembered, default, or recomputed Item subtotal.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur.

@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: command
 id: sales.add-order-item
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 
 summary: Add Order Item MUST append one distinct Pricing-quoted Item with a positive decimal Quantity to an eligible Order Draft.
@@ -36,6 +36,7 @@ preconditions:
   - rule_ref: sales.order.item-subtotal-is-pricing-authoritative
   - rule_ref: sales.order.item-price-must-not-be-negative
   - rule_ref: sales.order.item-retains-price-snapshot
+  - rule_ref: sales.order.concurrent-commands-do-not-interleave
   - contract_ref: sales.order-lifecycle
   - contract_ref: pricing.quote-order-item
 
@@ -98,6 +99,14 @@ failures:
     when: The Command MUST fail when Pricing reports a negative Unit Price, negative Item subtotal, or internally invalid Quote evidence.
     state_change: none
     emitted_events: none
+  - code: PRICE_QUOTE_UNAVAILABLE
+    when: The Command MUST fail when pricing.quote-order-item returns no authoritative Price Quote evidence for the request, and Sales MUST NOT treat the absent evidence as a report that the Price Quote is missing, expired, or invalid.
+    state_change: none
+    emitted_events: none
+  - code: ORDER_CONCURRENT_MODIFICATION
+    when: The Command MUST fail when another Command is concurrently changing the identified Order and this Command is not the one that takes effect.
+    state_change: none
+    emitted_events: none
   - code: COMMAND_ID_CONFLICT
     when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
     state_change: none
@@ -110,3 +119,7 @@ idempotency:
 
 unspecified_behavior:
   policy: prohibited_to_assume
+
+clarification_refs:
+  - clr-0009-dependency-unavailability
+  - clr-0011-concurrent-order-commands

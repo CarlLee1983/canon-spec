@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: context
 id: sales
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 
 summary: Sales MUST own the Order lifecycle and preserve Customer and Pricing evidence without assuming behavior owned by other Contexts.

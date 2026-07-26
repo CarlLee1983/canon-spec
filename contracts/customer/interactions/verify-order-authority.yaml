@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: interaction
 id: customer.verify-order-authority
-version: "1.0.0"
+version: "2.0.0"
 status: draft
 producer_context_ref: customer
 consumer_context_ref: sales
@@ -16,6 +16,8 @@ failures:
     outcome: Customer MUST report that customer_id does not identify an existing Customer.
   - code: CUSTOMER_NOT_AUTHORIZED
     outcome: Customer MUST report that actor_id may not create an Order for customer_id.
+  - code: CUSTOMER_AUTHORITY_UNAVAILABLE
+    outcome: Sales MUST observe that no authoritative existence or authority decision is available for the request, and MUST NOT interpret the absent decision as any of the reported outcomes above.
 
 idempotency:
   key: actor_id plus customer_id

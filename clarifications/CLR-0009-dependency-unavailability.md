@@ -1,7 +1,7 @@
 ---
 id: clr-0009-dependency-unavailability
-status: open
-blocks_candidate: true
+status: resolved
+blocks_candidate: false
 affected_refs:
   - customer.verify-order-authority
   - pricing.quote-order-item
@@ -31,3 +31,11 @@ The question matters because the three interpretations below are observably diff
 3. Unavailability maps onto the existing negative decisions, so an unreachable Customer behaves as `CUSTOMER_NOT_FOUND` and an unreachable Pricing behaves as `PRICE_QUOTE_NOT_FOUND`.
 
 Interpretation 3 makes "the dependency did not answer" indistinguishable from "the dependency answered no", which the current failure definitions describe as authoritative reports. Interpretation 2 leaves the Command without a terminal outcome, which no existing Scenario expresses. Interpretation 1 adds a failure code to a Command boundary that `architecture_constraints` requires to stay stable.
+
+## Resolution
+
+Human domain review selected interpretation 1. Unavailability is a domain outcome of the calling Command, because a caller that cannot obtain a decision must be able to distinguish "retry is appropriate" from "the answer is no".
+
+`customer.verify-order-authority` declares `CUSTOMER_AUTHORITY_UNAVAILABLE` and `pricing.quote-order-item` declares `PRICE_QUOTE_UNAVAILABLE`. Create Order Draft and Add Order Item declare the matching Command failures, each leaving state and Domain Event occurrences unchanged. Sales MUST NOT report a missing, unauthorized, expired, or invalid decision when the dependency returned no decision at all.
+
+See [DEC-0005](../decisions/DEC-0005-dependency-unavailability.md).

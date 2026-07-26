@@ -19,12 +19,10 @@ The body should explain why the answer matters and list known interpretations wi
 
 ## Open requests
 
-- [CLR-0009: cross-context dependency unavailability](CLR-0009-dependency-unavailability.md) — blocks candidate
 - [CLR-0010: Command ID reservation lifetime](CLR-0010-command-id-retention.md)
-- [CLR-0011: concurrent Commands against one Order](CLR-0011-concurrent-order-commands.md) — blocks candidate
 - [CLR-0012: Order Item removal](CLR-0012-order-item-removal.md)
 
-These requests await human domain decisions. The `blocks_candidate` marks are the authoring assessment required by `constitution/ambiguity-policy.md`, not a ruling; a domain reviewer may change them.
+Neither blocks promotion to candidate. Both await human domain decisions.
 
 ## Resolved requests
 
@@ -36,5 +34,7 @@ These requests await human domain decisions. The `blocks_candidate` marks are th
 - [CLR-0006: Command ID input conflict](CLR-0006-command-id-input-conflict.md)
 - [CLR-0007: Order ID allocation](CLR-0007-order-id-allocation.md)
 - [CLR-0008: Order Item identity](CLR-0008-order-item-identity.md)
+- [CLR-0009: cross-context dependency unavailability](CLR-0009-dependency-unavailability.md)
+- [CLR-0011: concurrent Commands against one Order](CLR-0011-concurrent-order-commands.md)
 
-These requests were resolved by human domain decisions for the Sales 2.0.0 draft. The authoritative behavior is defined only by the referenced contracts and Scenarios; these records preserve question and resolution history.
+These requests were resolved by human domain decisions for the Sales draft. The authoritative behavior is defined only by the referenced contracts and Scenarios; these records preserve question and resolution history.

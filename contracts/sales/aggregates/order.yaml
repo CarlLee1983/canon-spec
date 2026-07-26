@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: aggregate
 id: sales.order
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 context_ref: sales
 
@@ -107,6 +107,11 @@ invariants:
   - id: sales.order.command-id-conflict
     statement: Reusing a Sales-wide Command ID for a different Command or different normalized input MUST fail with COMMAND_ID_CONFLICT and MUST NOT create state changes or Domain Event occurrences.
     category: idempotency
+
+  - id: sales.order.concurrent-commands-do-not-interleave
+    statement: When two or more Commands would each change the same Order without a defined order between them, at most one MUST take effect, and every other MUST fail with ORDER_CONCURRENT_MODIFICATION and MUST NOT create state changes or Domain Event occurrences.
+    category: idempotency
+    clarification_ref: clr-0011-concurrent-order-commands
 
   - id: sales.order.single-order-submitted-event
     statement: A successful first submission of an Order MUST create exactly one OrderSubmitted business occurrence.

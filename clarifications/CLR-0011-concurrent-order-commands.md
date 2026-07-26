@@ -1,7 +1,7 @@
 ---
 id: clr-0011-concurrent-order-commands
-status: open
-blocks_candidate: true
+status: resolved
+blocks_candidate: false
 affected_refs:
   - sales.order
   - sales.order-lifecycle
@@ -31,3 +31,11 @@ The question matters more here than in a single-implementation project. The repo
 1. Commands against one Order are serialized as a business rule. Concurrency is invisible at the boundary, and every conforming implementation produces a result identical to some sequential order of the same Commands.
 2. Concurrency is a declared conflict. The losing Command receives a stable failure code, leaving state and Domain Event occurrences unchanged, and the caller decides whether to retry.
 3. Concurrency is outside the business contract. The rules describe one Command at a time, and simultaneous arrival is a delivery concern each implementation settles for itself.
+
+## Resolution
+
+Human domain review selected interpretation 2. Concurrent Commands against one Order are expected to be rare rather than routine, which makes a declared conflict cheaper than a serialization obligation placed on every implementation, and far safer than leaving the condition undefined.
+
+`sales.order.concurrent-commands-do-not-interleave` requires that at most one of two Commands changing the same Order takes effect. Every other Command fails with `ORDER_CONCURRENT_MODIFICATION` and creates no state change and no Domain Event occurrence, so a lost update becomes a visible, retryable failure instead of a silent one. Which Command wins is deliberately not specified; only the absence of side effects for the others is.
+
+See [DEC-0006](../decisions/DEC-0006-concurrent-order-commands.md).

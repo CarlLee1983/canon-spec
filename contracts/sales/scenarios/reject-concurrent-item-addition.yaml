@@ -1,0 +1,66 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.add-order-item.reject-concurrent-modification
+version: "3.0.0"
+status: draft
+summary: A losing concurrent Item addition fails visibly and MUST NOT silently drop its subtotal from the Order total.
+
+contract_refs:
+  - sales.add-order-item
+  - sales.order.concurrent-commands-do-not-interleave
+  - sales.order.total-equals-quoted-item-subtotals
+  - sales.order.item-additions-do-not-merge
+  - sales.order-item-added
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: orders.order-1001.items
+      operator: count_equals
+      value: 1
+    - path: orders.order-1001.total.amount_minor
+      operator: equals
+      value: 500
+    - path: pricing.quotes.quote-2002
+      operator: equals
+      value: "product product-1002, quantity 1, unit each, unit price 3.00 USD, item subtotal 300 minor units, valid"
+    - path: sales.concurrent-command-in-flight.order-1001
+      operator: equals
+      value: command-add-concurrent-001
+
+when:
+  command_ref: sales.add-order-item
+  input:
+    command_id: command-add-concurrent-002
+    order_id: order-1001
+    product_id: product-1002
+    price_quote_id: quote-2002
+    quantity: "1"
+
+then:
+  outcome:
+    status: failure
+    code: ORDER_CONCURRENT_MODIFICATION
+  state:
+    assertions:
+      - path: orders.order-1001.items
+        operator: count_equals
+        value: 1
+      - path: orders.order-1001.total.amount_minor
+        operator: equals
+        value: 500
+  events:
+    assertions:
+      - event_ref: sales.order-item-added
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.total
+      description: The Order total MUST NOT change for the Command that does not take effect.
+    - kind: side_effect
+      description: The Command that does not take effect MUST NOT append an Item whose subtotal is absent from the Order total.
+    - kind: event
+      event_ref: sales.order-item-added
+      description: OrderItemAdded MUST NOT occur for the Command that does not take effect.

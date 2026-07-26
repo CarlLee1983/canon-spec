@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: interaction
 id: pricing.quote-order-item
-version: "1.0.0"
+version: "2.0.0"
 status: draft
 producer_context_ref: pricing
 consumer_context_ref: sales
@@ -22,6 +22,8 @@ failures:
     outcome: Pricing MUST report that Quantity is not positive or violates Product precision, increment, or Unit of Measure rules.
   - code: INVALID_PRICE_QUOTE
     outcome: Pricing MUST report that Unit Price or Item subtotal is negative or that required quote evidence is internally invalid.
+  - code: PRICE_QUOTE_UNAVAILABLE
+    outcome: Sales MUST observe that no authoritative Price Quote evidence is available for the request, and MUST NOT interpret the absent evidence as any of the reported outcomes above.
 
 idempotency:
   key: price_quote_id plus product_id plus exact normalized decimal quantity

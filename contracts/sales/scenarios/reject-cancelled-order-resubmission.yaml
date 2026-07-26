@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.submit-order.reject-cancelled-resubmission
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 summary: A cancelled Order cannot return to submitted and produces no submission Event.
 

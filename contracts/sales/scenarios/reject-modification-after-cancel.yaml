@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.add-order-item.reject-after-cancel
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 summary: A cancelled Order rejects Item addition and preserves all state.
 

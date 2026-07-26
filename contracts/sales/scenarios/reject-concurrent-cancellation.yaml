@@ -1,0 +1,48 @@
+schema_version: "1.0"
+kind: scenario
+id: sales.cancel-order.reject-concurrent-modification
+version: "3.0.0"
+status: draft
+summary: A Cancel Order Command that loses a concurrent race leaves the Order Draft unchanged and creates no OrderCancelled occurrence.
+
+contract_refs:
+  - sales.cancel-order
+  - sales.order.concurrent-commands-do-not-interleave
+  - sales.order.cancel-before-submission-only
+  - sales.order-cancelled
+
+given:
+  facts:
+    - path: orders.order-1001.state
+      operator: equals
+      value: draft
+    - path: sales.concurrent-command-in-flight.order-1001
+      operator: equals
+      value: command-cancel-concurrent-001
+
+when:
+  command_ref: sales.cancel-order
+  input:
+    command_id: command-cancel-concurrent-002
+    order_id: order-1001
+
+then:
+  outcome:
+    status: failure
+    code: ORDER_CONCURRENT_MODIFICATION
+  state:
+    assertions:
+      - path: orders.order-1001.state
+        operator: equals
+        value: draft
+  events:
+    assertions:
+      - event_ref: sales.order-cancelled
+        count: 0
+  forbidden:
+    - kind: state_change
+      path: orders.order-1001.state
+      description: The Order state MUST NOT change for the Command that does not take effect.
+    - kind: event
+      event_ref: sales.order-cancelled
+      description: OrderCancelled MUST NOT occur for the Command that does not take effect.

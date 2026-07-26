@@ -1,13 +1,14 @@
 schema_version: "1.0"
 kind: scenario
-id: sales.submit-order.reject-empty
+id: sales.submit-order.reject-concurrent-modification
 version: "3.0.0"
 status: draft
-summary: An empty Order Draft is rejected without state, total, or Event changes.
+summary: A Submit Order Command that loses a concurrent race leaves the Order unchanged and creates no OrderSubmitted occurrence.
 
 contract_refs:
   - sales.submit-order
-  - sales.order.submitted-must-have-items
+  - sales.order.concurrent-commands-do-not-interleave
+  - sales.order.single-order-submitted-event
   - sales.order-submitted
 
 given:
@@ -17,21 +18,21 @@ given:
       value: draft
     - path: orders.order-1001.items
       operator: count_equals
-      value: 0
-    - path: orders.order-1001.total.amount_minor
+      value: 1
+    - path: sales.concurrent-command-in-flight.order-1001
       operator: equals
-      value: 0
+      value: command-submit-concurrent-001
 
 when:
   command_ref: sales.submit-order
   input:
-    command_id: command-submit-empty-001
+    command_id: command-submit-concurrent-002
     order_id: order-1001
 
 then:
   outcome:
     status: failure
-    code: ORDER_EMPTY
+    code: ORDER_CONCURRENT_MODIFICATION
   state:
     assertions:
       - path: orders.order-1001.state
@@ -39,10 +40,7 @@ then:
         value: draft
       - path: orders.order-1001.items
         operator: count_equals
-        value: 0
-      - path: orders.order-1001.total.amount_minor
-        operator: equals
-        value: 0
+        value: 1
   events:
     assertions:
       - event_ref: sales.order-submitted
@@ -50,10 +48,7 @@ then:
   forbidden:
     - kind: state_change
       path: orders.order-1001.state
-      description: Order state MUST NOT change.
-    - kind: state_change
-      path: orders.order-1001.total
-      description: Order total MUST NOT change.
+      description: The Order state MUST NOT change for the Command that does not take effect.
     - kind: event
       event_ref: sales.order-submitted
-      description: OrderSubmitted MUST NOT occur.
+      description: OrderSubmitted MUST NOT occur more than once for one Order.

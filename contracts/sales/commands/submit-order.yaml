@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: command
 id: sales.submit-order
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 
 summary: Submit Order MUST move one eligible non-empty Order Draft to submitted and create one OrderSubmitted business occurrence.
@@ -21,6 +21,7 @@ preconditions:
   - rule_ref: sales.order.submitted-must-have-items
   - rule_ref: sales.order.cancelled-is-terminal
   - rule_ref: sales.order.single-order-submitted-event
+  - rule_ref: sales.order.concurrent-commands-do-not-interleave
   - contract_ref: sales.order-lifecycle
 
 success:
@@ -57,6 +58,10 @@ failures:
     when: The Command MUST fail when the identified Order is cancelled.
     state_change: none
     emitted_events: none
+  - code: ORDER_CONCURRENT_MODIFICATION
+    when: The Command MUST fail when another Command is concurrently changing the identified Order and this Command is not the one that takes effect.
+    state_change: none
+    emitted_events: none
   - code: COMMAND_ID_CONFLICT
     when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
     state_change: none
@@ -69,3 +74,6 @@ idempotency:
 
 unspecified_behavior:
   policy: prohibited_to_assume
+
+clarification_refs:
+  - clr-0011-concurrent-order-commands

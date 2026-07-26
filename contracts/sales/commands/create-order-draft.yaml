@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: command
 id: sales.create-order-draft
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 
 summary: Create Order Draft MUST verify Customer authority and create one draft Order with a Sales-allocated identity and fixed currency.
@@ -65,6 +65,10 @@ failures:
     when: The Command MUST fail when customer.verify-order-authority reports that input.actor_id may not act for input.customer_id.
     state_change: none
     emitted_events: none
+  - code: CUSTOMER_AUTHORITY_UNAVAILABLE
+    when: The Command MUST fail when customer.verify-order-authority returns no authoritative decision for input.actor_id and input.customer_id, and Sales MUST NOT treat the absent decision as a report that the Customer does not exist or is not authorized.
+    state_change: none
+    emitted_events: none
   - code: COMMAND_ID_CONFLICT
     when: The Command MUST fail when input.command_id was previously used in Sales for a different Command or normalized input.
     state_change: none
@@ -77,3 +81,6 @@ idempotency:
 
 unspecified_behavior:
   policy: prohibited_to_assume
+
+clarification_refs:
+  - clr-0009-dependency-unavailability

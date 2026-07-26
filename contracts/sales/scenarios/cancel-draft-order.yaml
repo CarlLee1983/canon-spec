@@ -1,7 +1,7 @@
 schema_version: "1.0"
 kind: scenario
 id: sales.cancel-order.cancel-draft
-version: "2.0.0"
+version: "3.0.0"
 status: draft
 summary: Cancelling an Order Draft moves it to cancelled without modifying quoted Items or total.
 
